@@ -31,6 +31,7 @@ export function AuthCard({ mode }: AuthCardProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(true);
   const [enabledOAuthProviders, setEnabledOAuthProviders] = useState<
     Array<"google" | "apple">
   >([]);
@@ -38,6 +39,8 @@ export function AuthCard({ mode }: AuthCardProps) {
   const isRegisterMode = mode === "register";
   const hasMinLength = password.length >= 6;
   const hasNumber = /\d/.test(password);
+  const passwordsMatch = !isRegisterMode || !confirmPassword || password === confirmPassword;
+  const googleEnabled = enabledOAuthProviders.includes("google");
 
   useEffect(() => {
     getOAuthProviders()
@@ -49,6 +52,9 @@ export function AuthCard({ mode }: AuthCardProps) {
       })
       .catch(() => {
         setEnabledOAuthProviders([]);
+      })
+      .finally(() => {
+        setIsLoadingProviders(false);
       });
   }, []);
 
@@ -74,15 +80,16 @@ export function AuthCard({ mode }: AuthCardProps) {
     try {
       if (isRegisterMode) {
         const result = await register({ displayName, email, password, confirmPassword });
-        setSuccessMessage(
-          result.verificationPreviewUrl
-            ? `Verification link generated. In development, open: ${result.verificationPreviewUrl}`
-            : "Verification email sent. Check your inbox before logging in."
-        );
+        setSuccessMessage("Verification email sent. Check your inbox before logging in.");
+        if (result.verificationPreviewUrl) {
+          setSuccessMessage(
+            `Verification email sent. Dev preview link: ${result.verificationPreviewUrl}`
+          );
+        }
       } else {
         const result = await login({ email, password });
         saveAuthToken(result.token);
-        router.push("/account");
+        router.push("/dashboard");
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -113,11 +120,40 @@ export function AuthCard({ mode }: AuthCardProps) {
         <h1 className="brand-heading text-2xl font-semibold">
           {isRegisterMode ? "Create your account" : "Welcome back"}
         </h1>
-        <p className="muted-text text-sm">
+        <p className="muted-text text-sm leading-6">
           {isRegisterMode
             ? "Start listing and finding tickets in a trusted student marketplace."
             : "Sign in to continue your ticket conversations and listings."}
         </p>
+      </div>
+
+      <div className="grid gap-3">
+        {isLoadingProviders ? (
+          <div className="h-11 w-full animate-pulse rounded-xl border border-[var(--border)] bg-white/5" />
+        ) : null}
+        {!isLoadingProviders && googleEnabled ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full border-white/15 bg-white/3"
+            onClick={() => handleOAuthLogin("google")}
+          >
+            Continue with Google
+          </Button>
+        ) : null}
+        {!isLoadingProviders && !googleEnabled ? (
+          <p className="muted-text text-center text-xs">
+            Google sign-in is currently unavailable.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-[var(--border)]" />
+        <span className="muted-text text-xs uppercase tracking-[0.18em]">
+          continue with email
+        </span>
+        <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
       <form className="grid gap-4" onSubmit={onSubmit}>
@@ -156,13 +192,16 @@ export function AuthCard({ mode }: AuthCardProps) {
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
             />
-            <div className="grid gap-1 text-xs">
+            <div className="grid gap-1 rounded-lg border border-[var(--border)] bg-white/2 px-3 py-2 text-xs">
               <p className={hasMinLength ? "text-emerald-300" : "muted-text"}>
-                - At least 6 characters
+                At least 6 characters
               </p>
               <p className={hasNumber ? "text-emerald-300" : "muted-text"}>
-                - Includes at least one number
+                Includes at least one number
               </p>
+              {!passwordsMatch ? (
+                <p className="text-red-200">Passwords must match</p>
+              ) : null}
             </div>
           </>
         ) : null}
@@ -194,51 +233,36 @@ export function AuthCard({ mode }: AuthCardProps) {
               : "Log in"}
         </Button>
         {isRegisterMode ? (
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={async () => {
-              setErrorMessage("");
-              setSuccessMessage("");
-              try {
-                const response = await resendVerificationEmail(email);
-                setSuccessMessage(
-                  response.verificationPreviewUrl
-                    ? `Verification link re-sent. Development preview: ${response.verificationPreviewUrl}`
-                    : response.message
-                );
-              } catch (error) {
-                setErrorMessage(
-                  error instanceof ApiClientError
-                    ? error.message
-                    : "Could not resend verification email."
-                );
-              }
-            }}
-            disabled={!email}
-          >
-            Resend verification email
-          </Button>
+          <p className="muted-text text-center text-xs">
+            Already signed up but not verified?{" "}
+            <button
+              type="button"
+              className="underline underline-offset-4"
+              onClick={async () => {
+                setErrorMessage("");
+                setSuccessMessage("");
+                try {
+                  const response = await resendVerificationEmail(email);
+                  setSuccessMessage(
+                    response.verificationPreviewUrl
+                      ? `Verification email re-sent. Dev preview: ${response.verificationPreviewUrl}`
+                      : response.message
+                  );
+                } catch (error) {
+                  setErrorMessage(
+                    error instanceof ApiClientError
+                      ? error.message
+                      : "Could not resend verification email."
+                  );
+                }
+              }}
+              disabled={!email}
+            >
+              Resend verification email
+            </button>
+          </p>
         ) : null}
       </form>
-
-      {enabledOAuthProviders.length ? (
-        <div className="mt-5 grid gap-2">
-          <p className="muted-text text-xs uppercase tracking-[0.18em]">or continue with</p>
-          {enabledOAuthProviders.map((provider) => (
-            <Button
-              key={provider}
-              type="button"
-              variant="ghost"
-              className="w-full capitalize"
-              onClick={() => handleOAuthLogin(provider)}
-            >
-              Continue with {provider}
-            </Button>
-          ))}
-        </div>
-      ) : null}
 
       <p className="muted-text mt-5 text-sm">
         {isRegisterMode ? "Already have an account? " : "Need an account? "}

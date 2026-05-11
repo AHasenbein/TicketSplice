@@ -15,7 +15,7 @@ export function OAuthCallbackClient() {
   useEffect(() => {
     if (token) {
       saveAuthToken(token);
-      router.replace("/account");
+      router.replace("/dashboard");
     }
   }, [router, token]);
 
