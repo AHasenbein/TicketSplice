@@ -1,0 +1,15 @@
+{
+  "name": "ticket-splice",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run -ws build",
+    "dev:api": "npm run -w @ticket-splice/api dev",
+    "lint": "npm run -ws lint",
+    "test": "npm run -ws test"
+  }
+}
