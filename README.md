@@ -12,6 +12,13 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 3. Run API:
    - `npm run dev:api`
 
+## Validation
+
+- Run API linting:
+  - `npm run -w @ticket-splice/api lint`
+- Run auth smoke test (build + register/login/me flow):
+  - `JWT_SECRET=your_long_local_secret npm run -w @ticket-splice/api test`
+
 ## Current status
 
 - Modular TypeScript Express API bootstrapped in `apps/api`.

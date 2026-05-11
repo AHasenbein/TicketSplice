@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { env } from "../../../config/env.js";
+import { HttpError } from "../../../shared/http-error.js";
 
 export interface AuthTokenPayload {
   userId: string;
@@ -13,6 +14,10 @@ export class SessionService {
   }
 
   verifyToken(token: string): AuthTokenPayload {
-    return jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
+    try {
+      return jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
+    } catch {
+      throw new HttpError(401, "Session token is invalid or expired.");
+    }
   }
 }

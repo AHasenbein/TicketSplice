@@ -27,8 +27,7 @@ export function createApp() {
 
   app.use("/api/v1/auth", createAuthRoutes(authService, oauthProviderRegistry));
 
-  app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
-    void next;
+  app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (error instanceof HttpError) {
       res.status(error.statusCode).json({ message: error.message });
       return;

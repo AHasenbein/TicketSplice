@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/main.ts",
     "lint": "eslint \"src/**/*.ts\"",
-    "test": "echo \"No tests yet\""
+    "test": "npm run test:smoke",
+    "test:smoke": "npm run build && node scripts/smoke-auth.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
