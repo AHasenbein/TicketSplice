@@ -39,7 +39,7 @@ export function AuthCard({ mode }: AuthCardProps) {
   const isRegisterMode = mode === "register";
   const hasMinLength = password.length >= 6;
   const hasNumber = /\d/.test(password);
-  const passwordsMatch = !isRegisterMode || !confirmPassword || password === confirmPassword;
+  const passwordsMatch = password === confirmPassword;
   const googleEnabled = enabledOAuthProviders.includes("google");
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export function AuthCard({ mode }: AuthCardProps) {
     setSuccessMessage("");
 
     if (isRegisterMode) {
-      if (password !== confirmPassword) {
+      if (!passwordsMatch) {
         setErrorMessage("Passwords do not match.");
         return;
       }
@@ -115,15 +115,16 @@ export function AuthCard({ mode }: AuthCardProps) {
   }
 
   return (
-    <SurfaceCard className="w-full max-w-md p-6 sm:p-8">
-      <div className="mb-6 grid gap-2">
-        <h1 className="brand-heading text-2xl font-semibold">
-          {isRegisterMode ? "Create your account" : "Welcome back"}
+    <SurfaceCard className="w-full max-w-[28rem] p-6 sm:p-8">
+      <div className="mb-7 grid gap-2">
+        <p className="muted-text text-xs uppercase tracking-[0.16em]">Ticket Splice</p>
+        <h1 className="brand-heading text-3xl font-semibold leading-tight">
+          {isRegisterMode ? "Create your account" : "Sign in"}
         </h1>
         <p className="muted-text text-sm leading-6">
           {isRegisterMode
-            ? "Start listing and finding tickets in a trusted student marketplace."
-            : "Sign in to continue your ticket conversations and listings."}
+            ? "Join the marketplace to buy, sell, and coordinate tickets quickly."
+            : "Continue to your dashboard, listings, and event chats."}
         </p>
       </div>
 
@@ -134,29 +135,27 @@ export function AuthCard({ mode }: AuthCardProps) {
         {!isLoadingProviders && googleEnabled ? (
           <Button
             type="button"
-            variant="ghost"
-            className="w-full border-white/15 bg-white/3"
+            variant="secondary"
+            className="w-full"
             onClick={() => handleOAuthLogin("google")}
           >
             Continue with Google
           </Button>
         ) : null}
         {!isLoadingProviders && !googleEnabled ? (
-          <p className="muted-text text-center text-xs">
+          <p className="muted-text rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-center text-xs">
             Google sign-in is currently unavailable.
           </p>
         ) : null}
       </div>
 
-      <div className="my-5 flex items-center gap-3">
+      <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-[var(--border)]" />
-        <span className="muted-text text-xs uppercase tracking-[0.18em]">
-          continue with email
-        </span>
+        <span className="muted-text text-xs uppercase tracking-[0.16em]">or use email</span>
         <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
-      <form className="grid gap-4" onSubmit={onSubmit}>
+      <form className="grid gap-3.5" onSubmit={onSubmit}>
         {isRegisterMode ? (
           <Input
             label="Display name"
@@ -191,17 +190,15 @@ export function AuthCard({ mode }: AuthCardProps) {
               required
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
+            errorMessage={confirmPassword && !passwordsMatch ? "Passwords must match" : undefined}
             />
-            <div className="grid gap-1 rounded-lg border border-[var(--border)] bg-white/2 px-3 py-2 text-xs">
+            <div className="grid gap-1 rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-xs">
               <p className={hasMinLength ? "text-emerald-300" : "muted-text"}>
                 At least 6 characters
               </p>
               <p className={hasNumber ? "text-emerald-300" : "muted-text"}>
                 Includes at least one number
               </p>
-              {!passwordsMatch ? (
-                <p className="text-red-200">Passwords must match</p>
-              ) : null}
             </div>
           </>
         ) : null}
@@ -210,6 +207,7 @@ export function AuthCard({ mode }: AuthCardProps) {
             type="checkbox"
             checked={showPassword}
             onChange={(event) => setShowPassword(event.target.checked)}
+            className="size-3.5 rounded border-[var(--border)] bg-[var(--surface)]"
           />
           Show password
         </label>
@@ -233,11 +231,11 @@ export function AuthCard({ mode }: AuthCardProps) {
               : "Log in"}
         </Button>
         {isRegisterMode ? (
-          <p className="muted-text text-center text-xs">
+          <p className="muted-text text-center text-xs leading-5">
             Already signed up but not verified?{" "}
             <button
               type="button"
-              className="underline underline-offset-4"
+              className="font-medium text-[var(--foreground)] underline underline-offset-4 disabled:opacity-60"
               onClick={async () => {
                 setErrorMessage("");
                 setSuccessMessage("");
@@ -264,11 +262,11 @@ export function AuthCard({ mode }: AuthCardProps) {
         ) : null}
       </form>
 
-      <p className="muted-text mt-5 text-sm">
+      <p className="muted-text mt-6 text-center text-sm">
         {isRegisterMode ? "Already have an account? " : "Need an account? "}
         <Link
           href={isRegisterMode ? "/auth/login" : "/auth/register"}
-          className="text-[var(--foreground)] underline-offset-4 hover:underline"
+          className="text-[var(--foreground)] underline underline-offset-4"
         >
           {isRegisterMode ? "Log in" : "Create one"}
         </Link>

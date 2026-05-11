@@ -60,45 +60,57 @@ export function DashboardPanel() {
   }
 
   return (
-    <div className="grid w-full max-w-3xl gap-4">
-      <SurfaceCard className="p-6 sm:p-8">
-        <p className="muted-text text-xs uppercase tracking-[0.18em]">signed in</p>
-        <h1 className="brand-heading mt-2 text-3xl font-semibold">
-          {user ? `Welcome, ${user.displayName}` : "Welcome"}
-        </h1>
-        <p className="muted-text mt-2 text-sm">
-          Your account is ready. Start browsing events or jump into your profile.
-        </p>
+    <div className="grid w-full max-w-4xl gap-5">
+      <SurfaceCard className="grid gap-5 p-6 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="muted-text text-xs uppercase tracking-[0.18em]">dashboard</p>
+            <h1 className="brand-heading mt-2 text-3xl font-semibold">
+              {user ? `Welcome, ${user.displayName}` : "Welcome"}
+            </h1>
+            <p className="muted-text mt-2 text-sm">
+              You are signed in and ready to browse listings or manage your account.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/">
+              <Button variant="secondary">Browse events</Button>
+            </Link>
+            <Link href="/account">
+              <Button variant="ghost">My account</Button>
+            </Link>
+          </div>
+        </div>
         {errorMessage ? (
-          <p className="mt-4 rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+          <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
             {errorMessage}
           </p>
         ) : null}
       </SurfaceCard>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SurfaceCard className="p-5">
-          <h2 className="brand-heading text-lg font-medium">Next step</h2>
-          <p className="muted-text mt-2 text-sm">Browse listings and discover upcoming events.</p>
-          <Link href="/" className="mt-4 inline-block text-sm underline underline-offset-4">
-            Go to homepage
-          </Link>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <SurfaceCard className="p-5" elevated={false}>
+          <p className="muted-text text-xs uppercase tracking-[0.16em]">Status</p>
+          <p className="brand-heading mt-3 text-base font-medium">Account active</p>
+          <p className="muted-text mt-1 text-sm">Session is valid and secured.</p>
         </SurfaceCard>
-        <SurfaceCard className="p-5">
-          <h2 className="brand-heading text-lg font-medium">Account</h2>
-          <p className="muted-text mt-2 text-sm">Manage your current session and profile details.</p>
-          <Link
-            href="/account"
-            className="mt-4 inline-block text-sm underline underline-offset-4"
-          >
-            Open account page
-          </Link>
+        <SurfaceCard className="p-5" elevated={false}>
+          <p className="muted-text text-xs uppercase tracking-[0.16em]">Auth</p>
+          <p className="brand-heading mt-3 text-base font-medium">
+            {user?.providers.join(", ") || "Unknown"}
+          </p>
+          <p className="muted-text mt-1 text-sm">Sign-in method linked to your profile.</p>
+        </SurfaceCard>
+        <SurfaceCard className="p-5" elevated={false}>
+          <p className="muted-text text-xs uppercase tracking-[0.16em]">Quick action</p>
+          <p className="brand-heading mt-3 text-base font-medium">Continue setup</p>
+          <p className="muted-text mt-1 text-sm">Add listing details and preferences next.</p>
         </SurfaceCard>
       </div>
 
       <div className="flex justify-start">
         <Button
-          variant="ghost"
+          variant="danger"
           onClick={() => {
             clearAuthToken();
             router.replace("/auth/login");
