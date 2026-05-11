@@ -10,6 +10,9 @@ export interface User {
   email: string;
   displayName: string;
   passwordHash?: string;
+  emailVerified: boolean;
+  emailVerificationTokenHash?: string;
+  emailVerificationExpiresAt?: Date;
   providers: AuthProvider[];
   createdAt: Date;
 }

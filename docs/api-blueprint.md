@@ -5,10 +5,14 @@ This document defines the modular API surface for the first build phase.
 ## Implemented now
 
 ### Auth and account
-- `POST /api/v1/auth/register` - create account with email/password.
+- `POST /api/v1/auth/register` - create account with email/password and trigger verification email.
 - `POST /api/v1/auth/login` - log in and receive JWT token.
 - `GET /api/v1/auth/me` - get currently authenticated user from Bearer token.
-- `GET /api/v1/auth/oauth/providers` - OAuth readiness endpoint (`google`, `apple`) with current enablement status.
+- `POST /api/v1/auth/verify-email` - verify account using emailed token.
+- `POST /api/v1/auth/verify-email/resend` - resend verification link.
+- `GET /api/v1/auth/oauth/providers` - OAuth provider enablement status.
+- `GET /api/v1/auth/oauth/:provider/start` - get OAuth authorization URL.
+- `GET /api/v1/auth/oauth/:provider/callback` - OAuth callback handler that redirects to web app with token.
 
 ## Next APIs to add (MVP order)
 

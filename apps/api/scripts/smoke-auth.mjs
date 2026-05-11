@@ -17,12 +17,35 @@ const server = app.listen(0, async () => {
       body: JSON.stringify({
         email,
         displayName: "Smoke Tester",
-        password
+        password,
+        confirmPassword: password
       })
     });
 
     if (!registerResponse.ok) {
       throw new Error(`Register failed with status ${registerResponse.status}.`);
+    }
+
+    const registerBody = await registerResponse.json();
+    const previewUrl = registerBody.verificationPreviewUrl;
+    if (!previewUrl) {
+      throw new Error("Missing verification preview URL in development mode.");
+    }
+
+    const verificationToken = new URL(previewUrl).searchParams.get("token");
+    if (!verificationToken) {
+      throw new Error("Could not extract verification token from preview URL.");
+    }
+
+    const verifyResponse = await fetch(`${baseUrl}/api/v1/auth/verify-email`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        token: verificationToken
+      })
+    });
+    if (!verifyResponse.ok) {
+      throw new Error(`Verify email failed with status ${verifyResponse.status}.`);
     }
 
     const loginResponse = await fetch(`${baseUrl}/api/v1/auth/login`, {

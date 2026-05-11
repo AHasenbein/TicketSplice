@@ -9,6 +9,7 @@
   "scripts": {
     "build": "npm run -ws build",
     "dev:api": "npm run -w @ticket-splice/api dev",
+    "dev:web": "npm run -w web dev",
     "lint": "npm run -ws lint",
     "test": "npm run -ws test"
   }

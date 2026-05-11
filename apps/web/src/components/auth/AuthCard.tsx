@@ -1,0 +1,254 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import {
+  getOAuthAuthorizationUrl,
+  getOAuthProviders,
+  login,
+  register,
+  resendVerificationEmail
+} from "@/lib/api/auth";
+import { ApiClientError } from "@/lib/api/client";
+import { saveAuthToken } from "@/lib/auth/token-storage";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { SurfaceCard } from "../ui/SurfaceCard";
+
+interface AuthCardProps {
+  mode: "login" | "register";
+}
+
+export function AuthCard({ mode }: AuthCardProps) {
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [enabledOAuthProviders, setEnabledOAuthProviders] = useState<
+    Array<"google" | "apple">
+  >([]);
+
+  const isRegisterMode = mode === "register";
+  const hasMinLength = password.length >= 6;
+  const hasNumber = /\d/.test(password);
+
+  useEffect(() => {
+    getOAuthProviders()
+      .then((providers) => {
+        const enabled = providers
+          .filter((provider) => provider.enabled)
+          .map((provider) => provider.id);
+        setEnabledOAuthProviders(enabled);
+      })
+      .catch(() => {
+        setEnabledOAuthProviders([]);
+      });
+  }, []);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (isRegisterMode) {
+      if (password !== confirmPassword) {
+        setErrorMessage("Passwords do not match.");
+        return;
+      }
+
+      if (!hasMinLength || !hasNumber) {
+        setErrorMessage("Password must be 6+ characters and include at least one number.");
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isRegisterMode) {
+        const result = await register({ displayName, email, password, confirmPassword });
+        setSuccessMessage(
+          result.verificationPreviewUrl
+            ? `Verification link generated. In development, open: ${result.verificationPreviewUrl}`
+            : "Verification email sent. Check your inbox before logging in."
+        );
+      } else {
+        const result = await login({ email, password });
+        saveAuthToken(result.token);
+        router.push("/account");
+      }
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Unexpected error. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleOAuthLogin(provider: "google" | "apple") {
+    setErrorMessage("");
+    try {
+      const authorizationUrl = await getOAuthAuthorizationUrl(provider);
+      window.location.assign(authorizationUrl);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof ApiClientError ? error.message : "Could not start OAuth login."
+      );
+    }
+  }
+
+  return (
+    <SurfaceCard className="w-full max-w-md p-6 sm:p-8">
+      <div className="mb-6 grid gap-2">
+        <h1 className="brand-heading text-2xl font-semibold">
+          {isRegisterMode ? "Create your account" : "Welcome back"}
+        </h1>
+        <p className="muted-text text-sm">
+          {isRegisterMode
+            ? "Start listing and finding tickets in a trusted student marketplace."
+            : "Sign in to continue your ticket conversations and listings."}
+        </p>
+      </div>
+
+      <form className="grid gap-4" onSubmit={onSubmit}>
+        {isRegisterMode ? (
+          <Input
+            label="Display name"
+            autoComplete="name"
+            required
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+          />
+        ) : null}
+        <Input
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        <Input
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          autoComplete={isRegisterMode ? "new-password" : "current-password"}
+          required
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        {isRegisterMode ? (
+          <>
+            <Input
+              label="Confirm password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+            <div className="grid gap-1 text-xs">
+              <p className={hasMinLength ? "text-emerald-300" : "muted-text"}>
+                - At least 6 characters
+              </p>
+              <p className={hasNumber ? "text-emerald-300" : "muted-text"}>
+                - Includes at least one number
+              </p>
+            </div>
+          </>
+        ) : null}
+        <label className="flex items-center gap-2 text-xs muted-text">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={(event) => setShowPassword(event.target.checked)}
+          />
+          Show password
+        </label>
+
+        {errorMessage ? (
+          <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+            {errorMessage}
+          </p>
+        ) : null}
+        {successMessage ? (
+          <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-100">
+            {successMessage}
+          </p>
+        ) : null}
+
+        <Button disabled={isSubmitting} type="submit" className="mt-1 w-full">
+          {isSubmitting
+            ? "Please wait..."
+            : isRegisterMode
+              ? "Create account"
+              : "Log in"}
+        </Button>
+        {isRegisterMode ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={async () => {
+              setErrorMessage("");
+              setSuccessMessage("");
+              try {
+                const response = await resendVerificationEmail(email);
+                setSuccessMessage(
+                  response.verificationPreviewUrl
+                    ? `Verification link re-sent. Development preview: ${response.verificationPreviewUrl}`
+                    : response.message
+                );
+              } catch (error) {
+                setErrorMessage(
+                  error instanceof ApiClientError
+                    ? error.message
+                    : "Could not resend verification email."
+                );
+              }
+            }}
+            disabled={!email}
+          >
+            Resend verification email
+          </Button>
+        ) : null}
+      </form>
+
+      {enabledOAuthProviders.length ? (
+        <div className="mt-5 grid gap-2">
+          <p className="muted-text text-xs uppercase tracking-[0.18em]">or continue with</p>
+          {enabledOAuthProviders.map((provider) => (
+            <Button
+              key={provider}
+              type="button"
+              variant="ghost"
+              className="w-full capitalize"
+              onClick={() => handleOAuthLogin(provider)}
+            >
+              Continue with {provider}
+            </Button>
+          ))}
+        </div>
+      ) : null}
+
+      <p className="muted-text mt-5 text-sm">
+        {isRegisterMode ? "Already have an account? " : "Need an account? "}
+        <Link
+          href={isRegisterMode ? "/auth/login" : "/auth/register"}
+          className="text-[var(--foreground)] underline-offset-4 hover:underline"
+        >
+          {isRegisterMode ? "Log in" : "Create one"}
+        </Link>
+      </p>
+    </SurfaceCard>
+  );
+}

@@ -14,7 +14,20 @@ dotenv.config({
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_PORT: z.coerce.number().default(4000),
-  JWT_SECRET: z.string().min(24, "JWT_SECRET must be at least 24 characters")
+  JWT_SECRET: z.string().min(24, "JWT_SECRET must be at least 24 characters"),
+  APP_WEB_URL: z.url().default("http://localhost:3000"),
+  EMAIL_FROM: z.email().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_SECURE: z
+    .union([z.literal("true"), z.literal("false")])
+    .optional()
+    .transform((value) => value === "true"),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

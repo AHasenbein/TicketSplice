@@ -24,6 +24,16 @@ export class InMemoryUserRepository implements UserRepository {
     return this.usersById.get(userId) ?? null;
   }
 
+  async findByEmailVerificationTokenHash(tokenHash: string): Promise<User | null> {
+    for (const user of this.usersById.values()) {
+      if (user.emailVerificationTokenHash === tokenHash) {
+        return user;
+      }
+    }
+
+    return null;
+  }
+
   async update(user: User): Promise<User> {
     this.usersById.set(user.id, user);
     this.userIdsByEmail.set(user.email, user.id);
