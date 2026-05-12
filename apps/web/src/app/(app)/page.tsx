@@ -7,9 +7,7 @@ export default function Home() {
     <section className="page-shell flex flex-1 flex-col py-12 sm:py-16">
       <section className="grid gap-8">
         <div className="grid gap-6">
-          <p className="muted-text text-xs uppercase tracking-[0.16em]">
-            Student-first ticket marketplace
-          </p>
+         
           <h1 className="brand-heading max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
             Clean ticket buying and selling with social coordination built in.
           </h1>
