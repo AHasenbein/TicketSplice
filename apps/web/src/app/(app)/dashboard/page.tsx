@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Ticket Splice",
+  description: "Quick actions for your ticket marketplace activity."
+};
 
 export default function DashboardPage() {
   return (

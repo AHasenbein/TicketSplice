@@ -4,6 +4,7 @@ export interface Event {
   id: string;
   organizerId: string;
   title: string;
+  artists: string[];
   venue: string;
   city: string;
   startAt: string;
@@ -22,6 +23,7 @@ interface EventResponse {
 
 export interface CreateEventInput {
   title: string;
+  artists?: string[];
   venue: string;
   city: string;
   startAt: string;
@@ -31,6 +33,8 @@ export interface CreateEventInput {
 interface ListEventsOptions {
   houseOnly?: boolean;
   upcomingOnly?: boolean;
+  query?: string;
+  limit?: number;
 }
 
 export async function listEvents(options: ListEventsOptions = {}): Promise<Event[]> {
@@ -40,6 +44,12 @@ export async function listEvents(options: ListEventsOptions = {}): Promise<Event
     houseOnly: String(houseOnly),
     upcomingOnly: String(upcomingOnly)
   });
+  if (options.query?.trim()) {
+    query.set("q", options.query.trim());
+  }
+  if (options.limit) {
+    query.set("limit", String(options.limit));
+  }
 
   const response = await apiRequest<EventsResponse>(`/api/v1/events?${query.toString()}`);
   return response.events;

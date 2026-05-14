@@ -1,14 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { AuthUser } from "@/lib/api/auth";
 import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
+import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { ButtonLink } from "../ui/ButtonLink";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
 export function AccountPanel() {
+  const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -19,10 +23,7 @@ export function AccountPanel() {
     async function loadUser() {
       const token = readAuthToken();
       if (!token) {
-        if (!cancelled) {
-          setErrorMessage("No active session found. Log in first.");
-          setIsLoading(false);
-        }
+        router.replace("/auth/login");
         return;
       }
 
@@ -51,19 +52,23 @@ export function AccountPanel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [router]);
 
   return (
     <SurfaceCard className="w-full max-w-2xl p-6 sm:p-8">
       <h1 className="brand-heading text-2xl font-semibold">Your account</h1>
       <p className="muted-text mt-2 text-sm">Session check from the live API.</p>
 
-      {isLoading ? <p className="muted-text mt-6">Loading account...</p> : null}
+      {isLoading ? (
+        <p className="muted-text mt-6" role="status" aria-live="polite">
+          Loading account...
+        </p>
+      ) : null}
 
       {errorMessage ? (
-        <p className="mt-6 rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+        <Alert tone="error" className="mt-6" announce="assertive">
           {errorMessage}
-        </p>
+        </Alert>
       ) : null}
 
       {user ? (
@@ -83,17 +88,22 @@ export function AccountPanel() {
         </dl>
       ) : null}
 
-      <Button
-        variant="ghost"
-        className="mt-6"
-        onClick={() => {
-          clearAuthToken();
-          setUser(null);
-          setErrorMessage("Signed out locally. Log in again.");
-        }}
-      >
-        Clear local session
-      </Button>
+      <div className="mt-6 flex items-center gap-2">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            clearAuthToken();
+            setUser(null);
+            setErrorMessage("Signed out locally. Log in again.");
+            router.push("/auth/login");
+          }}
+        >
+          Clear local session
+        </Button>
+        <ButtonLink href="/auth/login" variant="secondary">
+          Log in again
+        </ButtonLink>
+      </div>
     </SurfaceCard>
   );
 }

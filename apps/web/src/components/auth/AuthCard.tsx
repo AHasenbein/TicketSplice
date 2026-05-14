@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { saveAuthToken } from "@/lib/auth/token-storage";
+import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
@@ -35,6 +36,7 @@ export function AuthCard({ mode }: AuthCardProps) {
   const [enabledOAuthProviders, setEnabledOAuthProviders] = useState<
     Array<"google" | "apple">
   >([]);
+  const [oauthMessage, setOauthMessage] = useState("");
 
   const isRegisterMode = mode === "register";
   const hasMinLength = password.length >= 6;
@@ -44,14 +46,16 @@ export function AuthCard({ mode }: AuthCardProps) {
 
   useEffect(() => {
     getOAuthProviders()
-      .then((providers) => {
-        const enabled = providers
+      .then((response) => {
+        const enabled = response.providers
           .filter((provider) => provider.enabled)
           .map((provider) => provider.id);
         setEnabledOAuthProviders(enabled);
+        setOauthMessage(response.message ?? "");
       })
       .catch(() => {
         setEnabledOAuthProviders([]);
+        setOauthMessage("Could not check OAuth providers. Use email sign in for now.");
       })
       .finally(() => {
         setIsLoadingProviders(false);
@@ -81,7 +85,7 @@ export function AuthCard({ mode }: AuthCardProps) {
       if (isRegisterMode) {
         const result = await register({ displayName, email, password, confirmPassword });
         setSuccessMessage("Verification email sent. Check your inbox before logging in.");
-        if (result.verificationPreviewUrl) {
+        if (result.verificationPreviewUrl && process.env.NODE_ENV === "development") {
           setSuccessMessage(
             `Verification email sent. Dev preview link: ${result.verificationPreviewUrl}`
           );
@@ -93,7 +97,7 @@ export function AuthCard({ mode }: AuthCardProps) {
       }
     } catch (error) {
       if (error instanceof ApiClientError) {
-        setErrorMessage(error.message);
+        setErrorMessage(error.issues?.[0]?.message ?? error.message);
       } else {
         setErrorMessage("Unexpected error. Please try again.");
       }
@@ -130,7 +134,12 @@ export function AuthCard({ mode }: AuthCardProps) {
 
       <div className="grid gap-3">
         {isLoadingProviders ? (
-          <div className="h-11 w-full animate-pulse rounded-xl border border-[var(--border)] bg-white/5" />
+          <div
+            className="h-11 w-full animate-pulse rounded-xl border border-[var(--border)] bg-white/5"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading OAuth providers"
+          />
         ) : null}
         {!isLoadingProviders && googleEnabled ? (
           <Button
@@ -143,10 +152,15 @@ export function AuthCard({ mode }: AuthCardProps) {
           </Button>
         ) : null}
         {!isLoadingProviders && !googleEnabled ? (
-          <p className="muted-text rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-center text-xs">
+          <p
+            className="muted-text rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-center text-xs"
+            role="status"
+            aria-live="polite"
+          >
             Google sign-in is currently unavailable.
           </p>
         ) : null}
+        {oauthMessage ? <Alert tone="info">{oauthMessage}</Alert> : null}
       </div>
 
       <div className="my-6 flex items-center gap-3">
@@ -190,14 +204,16 @@ export function AuthCard({ mode }: AuthCardProps) {
               required
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-            errorMessage={confirmPassword && !passwordsMatch ? "Passwords must match" : undefined}
+              errorMessage={confirmPassword && !passwordsMatch ? "Passwords must match" : undefined}
             />
             <div className="grid gap-1 rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-xs">
               <p className={hasMinLength ? "text-emerald-300" : "muted-text"}>
-                At least 6 characters
+                {hasMinLength ? "Met: at least 6 characters" : "Not met: at least 6 characters"}
               </p>
               <p className={hasNumber ? "text-emerald-300" : "muted-text"}>
-                Includes at least one number
+                {hasNumber
+                  ? "Met: includes at least one number"
+                  : "Not met: includes at least one number"}
               </p>
             </div>
           </>
@@ -207,20 +223,20 @@ export function AuthCard({ mode }: AuthCardProps) {
             type="checkbox"
             checked={showPassword}
             onChange={(event) => setShowPassword(event.target.checked)}
-            className="size-3.5 rounded border-[var(--border)] bg-[var(--surface)]"
+            className="size-5 rounded border-[var(--border)] bg-[var(--surface)]"
           />
           Show password
         </label>
 
         {errorMessage ? (
-          <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+          <Alert tone="error" announce="assertive">
             {errorMessage}
-          </p>
+          </Alert>
         ) : null}
         {successMessage ? (
-          <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-100">
+          <Alert tone="success">
             {successMessage}
-          </p>
+          </Alert>
         ) : null}
 
         <Button disabled={isSubmitting} type="submit" className="mt-1 w-full">
@@ -242,14 +258,14 @@ export function AuthCard({ mode }: AuthCardProps) {
                 try {
                   const response = await resendVerificationEmail(email);
                   setSuccessMessage(
-                    response.verificationPreviewUrl
+                    response.verificationPreviewUrl && process.env.NODE_ENV === "development"
                       ? `Verification email re-sent. Dev preview: ${response.verificationPreviewUrl}`
                       : response.message
                   );
                 } catch (error) {
                   setErrorMessage(
                     error instanceof ApiClientError
-                      ? error.message
+                      ? error.issues?.[0]?.message ?? error.message
                       : "Could not resend verification email."
                   );
                 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
@@ -7,7 +8,9 @@ import { ApiClientError } from "@/lib/api/client";
 import { getListing, purchaseListing } from "@/lib/api/listings";
 import type { Listing } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
+import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { ButtonLink } from "../ui/ButtonLink";
 import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -97,15 +100,15 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
   }
 
   if (isLoading) {
-    return <p className="muted-text text-sm">Loading listing...</p>;
+    return (
+      <p className="muted-text text-sm" role="status" aria-live="polite">
+        Loading listing...
+      </p>
+    );
   }
 
   if (errorMessage && !listing) {
-    return (
-      <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
-        {errorMessage}
-      </p>
-    );
+    return <Alert tone="error" announce="assertive">{errorMessage}</Alert>;
   }
 
   if (!listing) {
@@ -114,7 +117,27 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
 
   return (
     <SurfaceCard className="grid max-w-xl gap-4 p-6 sm:p-8">
+      <nav className="flex items-center gap-2 text-sm">
+        <Link href="/listings/mine" className="muted-text underline underline-offset-4">
+          My listings
+        </Link>
+        <span className="muted-text">/</span>
+        <span className="muted-text">Listing details</span>
+      </nav>
       <h1 className="brand-heading text-3xl font-semibold">{listing.title}</h1>
+      <p className="muted-text text-sm">
+        For event:{" "}
+        <Link
+          href={`/events/${listing.eventId}`}
+          className="text-[var(--foreground)] underline underline-offset-4"
+        >
+          {listing.eventTitle}
+        </Link>{" "}
+        in {listing.eventCity}
+      </p>
+      <p className="muted-text text-sm">
+        Event time: {new Date(listing.eventStartAt).toLocaleString()}
+      </p>
       <p className="text-sm text-white/90">${(listing.priceCents / 100).toFixed(2)} per ticket</p>
       <p className="muted-text text-sm">
         {listing.quantity} ticket{listing.quantity === 1 ? "" : "s"} available
@@ -136,8 +159,13 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
           {isSubmitting ? "Processing..." : "Buy tickets"}
         </Button>
       </form>
-      {message ? <p className="text-success text-sm">{message}</p> : null}
-      {errorMessage ? <p className="text-danger text-sm">{errorMessage}</p> : null}
+      {message ? <Alert tone="success">{message}</Alert> : null}
+      {message ? (
+        <ButtonLink href="/listings/mine" variant="secondary" className="h-9 px-3">
+          Return to my listings
+        </ButtonLink>
+      ) : null}
+      {errorMessage ? <Alert tone="error" announce="assertive">{errorMessage}</Alert> : null}
     </SurfaceCard>
   );
 }

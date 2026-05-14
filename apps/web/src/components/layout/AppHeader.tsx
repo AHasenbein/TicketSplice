@@ -5,11 +5,27 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
 import { Button } from "../ui/Button";
+import { ButtonLink } from "../ui/ButtonLink";
+
+interface NavItem {
+  href: string;
+  label: string;
+}
 
 export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const authedPrimaryItems: NavItem[] = [
+    { href: "/events", label: "Events" },
+    { href: "/listings/new", label: "Sell tickets" },
+    { href: "/dashboard", label: "Dashboard" }
+  ];
+  const authedSecondaryItems: NavItem[] = [
+    { href: "/events/new", label: "Add event" },
+    { href: "/listings/mine", label: "My listings" },
+    { href: "/account", label: "Account" }
+  ];
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -26,6 +42,7 @@ export function AppHeader() {
   }, []);
 
   const isAuthRoute = pathname.startsWith("/auth");
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(7,11,20,0.8)] backdrop-blur-lg">
@@ -36,31 +53,55 @@ export function AppHeader() {
         <nav className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <Link href="/events">
-                <Button variant="ghost" className="h-9 px-4">
-                  House events
-                </Button>
-              </Link>
-              <Link href="/events/new">
-                <Button variant="ghost" className="h-9 px-4">
-                  Add event
-                </Button>
-              </Link>
-              <Link href="/listings/mine">
-                <Button variant="ghost" className="h-9 px-4">
-                  Listings
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="ghost" className="h-9 px-4">
-                  Dashboard
-                </Button>
-              </Link>
-              <Link href="/account">
-                <Button variant="ghost" className="h-9 px-4">
-                  Account
-                </Button>
-              </Link>
+              <div className="hidden items-center gap-2 md:flex">
+                {authedPrimaryItems.map((item) => (
+                  <ButtonLink
+                    key={item.href}
+                    href={item.href}
+                    variant={isActive(item.href) ? "secondary" : "ghost"}
+                    className="h-9 px-4"
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </ButtonLink>
+                ))}
+                <details className="group relative">
+                  <summary className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                    More
+                  </summary>
+                  <div className="absolute right-0 z-20 mt-2 grid min-w-44 gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
+                    {authedSecondaryItems.map((item) => (
+                      <ButtonLink
+                        key={item.href}
+                        href={item.href}
+                        variant={isActive(item.href) ? "secondary" : "ghost"}
+                        className="h-9 justify-start px-3"
+                        aria-current={isActive(item.href) ? "page" : undefined}
+                      >
+                        {item.label}
+                      </ButtonLink>
+                    ))}
+                  </div>
+                </details>
+              </div>
+              <details className="relative md:hidden">
+                <summary className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                  Menu
+                </summary>
+                <div className="absolute right-0 z-20 mt-2 grid min-w-48 gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
+                  {[...authedPrimaryItems, ...authedSecondaryItems].map((item) => (
+                    <ButtonLink
+                      key={item.href}
+                      href={item.href}
+                      variant={isActive(item.href) ? "secondary" : "ghost"}
+                      className="h-9 justify-start px-3"
+                      aria-current={isActive(item.href) ? "page" : undefined}
+                    >
+                      {item.label}
+                    </ButtonLink>
+                  ))}
+                </div>
+              </details>
               <Button
                 variant="secondary"
                 className="h-9 px-4"
@@ -76,15 +117,13 @@ export function AppHeader() {
           ) : (
             <>
               {!isAuthRoute ? (
-                <Link href="/auth/login">
-                  <Button variant="ghost" className="h-9 px-4">
-                    Log in
-                  </Button>
-                </Link>
+                <ButtonLink href="/auth/login" variant="ghost" className="h-9 px-4">
+                  Log in
+                </ButtonLink>
               ) : null}
-              <Link href="/auth/register">
-                <Button className="h-9 px-4">Create account</Button>
-              </Link>
+              <ButtonLink href="/auth/register" className="h-9 px-4">
+                Create account
+              </ButtonLink>
             </>
           )}
         </nav>

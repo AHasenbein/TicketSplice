@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 import { ApiClientError } from "@/lib/api/client";
 import { createEvent } from "@/lib/api/events";
 import { readAuthToken } from "@/lib/auth/token-storage";
+import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
@@ -17,12 +18,14 @@ function toIsoString(datetimeLocal: string): string {
 export function CreateEventForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [artists, setArtists] = useState("");
   const [venue, setVenue] = useState("");
   const [city, setCity] = useState("");
   const [startAt, setStartAt] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [startAtError, setStartAtError] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,10 +35,12 @@ export function CreateEventForm() {
       return;
     }
 
-    if (!startAt) {
-      setErrorMessage("Add a valid start date and time.");
+    const parsedStartAt = new Date(startAt);
+    if (!startAt || Number.isNaN(parsedStartAt.getTime())) {
+      setStartAtError("Add a valid start date and time.");
       return;
     }
+    setStartAtError("");
 
     setIsSubmitting(true);
     setErrorMessage("");
@@ -43,6 +48,10 @@ export function CreateEventForm() {
       const created = await createEvent(
         {
           title,
+          artists: artists
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
           venue,
           city,
           startAt: toIsoString(startAt),
@@ -52,7 +61,12 @@ export function CreateEventForm() {
       );
       router.push(`/events/${created.id}`);
     } catch (error) {
-      setErrorMessage(error instanceof ApiClientError ? error.message : "Could not publish event.");
+      if (error instanceof ApiClientError) {
+        const issueText = error.issues?.[0]?.message;
+        setErrorMessage(issueText ?? error.message);
+      } else {
+        setErrorMessage("Could not publish event.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -60,17 +74,23 @@ export function CreateEventForm() {
 
   return (
     <SurfaceCard className="grid max-w-2xl gap-4 p-6 sm:p-8">
-      <h1 className="brand-heading text-3xl font-semibold">Create house music event</h1>
+      <h1 className="brand-heading text-3xl font-semibold">Create event</h1>
       <p className="muted-text text-sm">
-        Keep event copy house-focused so buyers can quickly discover the right crowd and sound.
+        Add clear lineup and venue details so buyers can quickly understand the event.
       </p>
       <form className="grid gap-3" onSubmit={handleSubmit}>
         <Input
           label="Event title"
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="Deep House Rooftop Session"
+          placeholder="Rooftop Sunset Session"
           required
           value={title}
+        />
+        <Input
+          label="Artists (comma separated)"
+          onChange={(event) => setArtists(event.target.value)}
+          placeholder="Lane 8, Nora En Pure"
+          value={artists}
         />
         <Input
           label="Venue"
@@ -88,6 +108,7 @@ export function CreateEventForm() {
         />
         <Input
           label="Start date and time"
+          errorMessage={startAtError || undefined}
           onChange={(event) => setStartAt(event.target.value)}
           required
           type="datetime-local"
@@ -101,13 +122,17 @@ export function CreateEventForm() {
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Lineup, vibe, neighborhood, and ticket transfer details."
             value={description}
+            aria-describedby="event-description-count"
           />
+          <span className="muted-text text-xs" id="event-description-count">
+            {description.length}/600 characters
+          </span>
         </label>
         <Button disabled={isSubmitting} type="submit">
           {isSubmitting ? "Publishing..." : "Publish event"}
         </Button>
       </form>
-      {errorMessage ? <p className="text-danger text-sm">{errorMessage}</p> : null}
+      {errorMessage ? <Alert tone="error" announce="assertive">{errorMessage}</Alert> : null}
     </SurfaceCard>
   );
 }

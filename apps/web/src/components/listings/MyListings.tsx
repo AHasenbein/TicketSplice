@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ApiClientError } from "@/lib/api/client";
 import type { Listing } from "@/lib/api/listings";
 import { listMyListings } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
-import { Button } from "../ui/Button";
+import { Alert } from "../ui/Alert";
+import { ButtonLink } from "../ui/ButtonLink";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
 export function MyListings() {
@@ -52,27 +52,39 @@ export function MyListings() {
   }, []);
 
   if (isLoading) {
-    return <p className="muted-text text-sm">Loading your listings...</p>;
+    return (
+      <p className="muted-text text-sm" role="status" aria-live="polite">
+        Loading your listings...
+      </p>
+    );
   }
 
   if (errorMessage) {
-    return <p className="text-danger text-sm">{errorMessage}</p>;
+    return <Alert tone="error" announce="assertive">{errorMessage}</Alert>;
   }
 
   return (
     <div className="grid gap-4">
       <div className="flex justify-between gap-3">
         <h1 className="brand-heading text-3xl font-semibold">My listings</h1>
-        <Link href="/listings/new">
-          <Button>Create listing</Button>
-        </Link>
+        <ButtonLink href="/listings/new">Create listing</ButtonLink>
       </div>
       {listings.length ? (
         listings.map((listing) => (
           <SurfaceCard className="grid gap-2 p-4" elevated={false} key={listing.id}>
-            <p className="brand-heading text-lg font-semibold">{listing.title}</p>
+            <ButtonLink
+              href={`/listings/${listing.id}`}
+              variant="ghost"
+              className="h-auto justify-start px-0 py-0 text-left text-base"
+            >
+              {listing.title}
+            </ButtonLink>
             <p className="muted-text text-sm">
               ${(listing.priceCents / 100).toFixed(2)} x {listing.quantity} remaining
+            </p>
+            <p className="muted-text text-sm">
+              {listing.eventTitle} - {listing.eventCity} -{" "}
+              {new Date(listing.eventStartAt).toLocaleDateString()}
             </p>
             <p className={`text-sm ${listing.soldOut ? "text-danger" : "text-success"}`}>
               {listing.soldOut ? "Sold out" : "Active"}

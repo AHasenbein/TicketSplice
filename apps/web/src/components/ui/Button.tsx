@@ -17,6 +17,18 @@ const variantClasses: Record<ButtonVariant, string> = {
     "bg-[linear-gradient(135deg,#f43f5e,#fb7185)] text-white shadow-[0_8px_20px_rgba(244,63,94,0.35)] hover:brightness-110"
 };
 
+interface ButtonClassOptions {
+  variant?: ButtonVariant;
+  className?: string;
+}
+
+export function getButtonClassName({
+  variant = "primary",
+  className = ""
+}: ButtonClassOptions = {}): string {
+  return `inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] px-5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${className}`;
+}
+
 export function Button({
   children,
   className = "",
@@ -25,7 +37,7 @@ export function Button({
 }: PropsWithChildren<ButtonProps>) {
   return (
     <button
-      className={`inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] px-5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${className}`}
+      className={getButtonClassName({ variant, className })}
       {...props}
     >
       {children}

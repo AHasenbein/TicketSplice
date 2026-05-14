@@ -11,8 +11,8 @@ export function SurfaceCard({
   elevated = true
 }: PropsWithChildren<SurfaceCardProps>) {
   return (
-    <section className={`surface-card ${elevated ? "faint-glow" : ""} ${className}`}>
+    <div className={`surface-card ${elevated ? "faint-glow" : ""} ${className}`}>
       {children}
-    </section>
+    </div>
   );
 }

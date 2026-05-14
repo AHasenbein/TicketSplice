@@ -3,6 +3,9 @@ import { apiRequest } from "./client";
 export interface Listing {
   id: string;
   eventId: string;
+  eventTitle: string;
+  eventCity: string;
+  eventStartAt: string;
   sellerId: string;
   title: string;
   priceCents: number;

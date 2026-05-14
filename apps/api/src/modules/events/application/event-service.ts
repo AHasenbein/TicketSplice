@@ -6,6 +6,7 @@ import type { EventRepository } from "../domain/event-repository.js";
 export interface CreateEventInput {
   organizerId: string;
   title: string;
+  artists?: string[];
   venue: string;
   city: string;
   startAt: string;
@@ -16,6 +17,7 @@ export interface EventResponse {
   id: string;
   organizerId: string;
   title: string;
+  artists: string[];
   venue: string;
   city: string;
   startAt: string;
@@ -27,6 +29,8 @@ export interface EventResponse {
 interface ListEventsInput {
   houseOnly?: boolean;
   upcomingOnly?: boolean;
+  query?: string;
+  limit?: number;
 }
 
 interface GoabaseParty {
@@ -59,6 +63,7 @@ export class EventService {
       id: crypto.randomUUID(),
       organizerId: input.organizerId,
       title: input.title.trim(),
+      artists: this.normalizeArtists(input.artists),
       venue: input.venue.trim(),
       city: input.city.trim(),
       startAt,
@@ -72,10 +77,18 @@ export class EventService {
   async listEvents(input: ListEventsInput = {}): Promise<EventResponse[]> {
     const events = await this.eventRepository.list();
     const now = Date.now();
-    return events
+    const normalizedQuery = input.query?.trim().toLowerCase();
+    const filtered = events
       .filter((event) => (input.upcomingOnly ?? true ? event.startAt.getTime() >= now : true))
       .filter((event) => (input.houseOnly ? this.isHouseEvent(event) : true))
-      .map((event) => this.toResponse(event));
+      .filter((event) =>
+        normalizedQuery
+          ? `${event.title} ${event.venue} ${event.city} ${event.description ?? ""} ${event.artists.join(" ")}`.toLowerCase().includes(normalizedQuery)
+          : true
+      );
+
+    const limited = input.limit && input.limit > 0 ? filtered.slice(0, input.limit) : filtered;
+    return limited.map((event) => this.toResponse(event));
   }
 
   async getEventById(eventId: string): Promise<EventResponse> {
@@ -142,6 +155,7 @@ export class EventService {
           id: `goabase-${party.id}`,
           organizerId: "goabase",
           title,
+          artists: [],
           venue,
           city,
           startAt,
@@ -157,7 +171,8 @@ export class EventService {
   }
 
   private isHouseEvent(event: Event): boolean {
-    const searchable = `${event.title} ${event.description ?? ""}`.toLowerCase();
+    const searchable =
+      `${event.title} ${event.description ?? ""} ${event.artists.join(" ")}`.toLowerCase();
     return [
       "house",
       "tech house",
@@ -173,6 +188,7 @@ export class EventService {
       id: event.id,
       organizerId: event.organizerId,
       title: event.title,
+      artists: event.artists,
       venue: event.venue,
       city: event.city,
       startAt: event.startAt.toISOString(),
@@ -180,5 +196,20 @@ export class EventService {
       isHouseMusic: this.isHouseEvent(event),
       createdAt: event.createdAt.toISOString()
     };
+  }
+
+  private normalizeArtists(input?: string[]): string[] {
+    const values = input ?? [];
+    const unique = new Set<string>();
+
+    for (const value of values) {
+      const normalized = value.trim();
+      if (!normalized) {
+        continue;
+      }
+      unique.add(normalized);
+    }
+
+    return Array.from(unique).slice(0, 8);
   }
 }

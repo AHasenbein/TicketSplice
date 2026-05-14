@@ -58,6 +58,7 @@ export function createApp() {
     const rooftopEvent = await eventService.createEvent({
       organizerId: "system-seed",
       title: "Chicago Rooftop House Session",
+      artists: ["Nora En Pure", "Lane 8"],
       venue: "Navy Pier Skyline Stage",
       city: "Chicago",
       startAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
@@ -66,6 +67,7 @@ export function createApp() {
     const warehouseEvent = await eventService.createEvent({
       organizerId: "system-seed",
       title: "Warehouse Afterhours: Tech House",
+      artists: ["Fisher", "Cloonee"],
       venue: "West Loop Warehouse",
       city: "Chicago",
       startAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),

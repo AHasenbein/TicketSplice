@@ -63,6 +63,7 @@ export interface OAuthProviderSummary {
 
 interface OAuthProvidersResponse {
   providers: OAuthProviderSummary[];
+  message?: string;
 }
 
 interface OAuthStartResponse {
@@ -75,9 +76,9 @@ export interface VerificationResponse {
   verificationPreviewUrl?: string;
 }
 
-export async function getOAuthProviders(): Promise<OAuthProviderSummary[]> {
+export async function getOAuthProviders(): Promise<OAuthProvidersResponse> {
   const response = await apiRequest<OAuthProvidersResponse>("/api/v1/auth/oauth/providers");
-  return response.providers;
+  return response;
 }
 
 export async function getOAuthAuthorizationUrl(

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { EventDetail } from "@/components/events/EventDetail";
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Event Details | Ticket Splice",
+  description: "View event details and browse available ticket listings."
+};
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { id } = await params;

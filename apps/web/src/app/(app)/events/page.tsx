@@ -1,25 +1,31 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { EventsBrowse } from "@/components/events/EventsBrowse";
-import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+
+export const metadata: Metadata = {
+  title: "Events | Ticket Splice",
+  description: "Browse current and upcoming events."
+};
 
 export default function EventsPage() {
   return (
     <section className="page-shell flex flex-1 flex-col gap-6 py-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="muted-text text-xs uppercase tracking-[0.18em]">house music marketplace</p>
-          <h1 className="brand-heading mt-2 text-3xl font-semibold">Current House Events</h1>
+          <p className="muted-text text-xs uppercase tracking-[0.18em]">marketplace</p>
+          <h1 className="brand-heading mt-2 text-3xl font-semibold">Current Events</h1>
+          <p className="muted-text mt-2 text-sm">
+            Showing curated upcoming events by default. Toggle filters below to broaden the view.
+          </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/events/new">
-            <Button variant="secondary">Add event</Button>
-          </Link>
-          <Link href="/listings/new">
-            <Button>Sell tickets</Button>
-          </Link>
-          <Link href="/listings/mine">
-            <Button variant="secondary">My listings</Button>
-          </Link>
+          <ButtonLink href="/events/new" variant="secondary">
+            Add event
+          </ButtonLink>
+          <ButtonLink href="/listings/new">Sell tickets</ButtonLink>
+          <ButtonLink href="/listings/mine" variant="secondary">
+            My listings
+          </ButtonLink>
         </div>
       </div>
       <EventsBrowse />

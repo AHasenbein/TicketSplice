@@ -7,6 +7,7 @@ import { EventService } from "../application/event-service.js";
 
 const createEventSchema = z.object({
   title: z.string().trim().min(2).max(120),
+  artists: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
   venue: z.string().trim().min(2).max(120),
   city: z.string().trim().min(2).max(80),
   startAt: z.string().datetime(),
@@ -34,9 +35,14 @@ export function createEventRoutes(eventService: EventService, authService: AuthS
         typeof req.query.upcomingOnly === "string"
           ? req.query.upcomingOnly.toLowerCase() !== "false"
           : true;
+      const query = typeof req.query.q === "string" ? req.query.q : undefined;
+      const limit =
+        typeof req.query.limit === "string" && Number.isFinite(Number(req.query.limit))
+          ? Number(req.query.limit)
+          : undefined;
 
       await eventService.syncCurrentHouseEvents();
-      const events = await eventService.listEvents({ houseOnly, upcomingOnly });
+      const events = await eventService.listEvents({ houseOnly, upcomingOnly, query, limit });
       res.status(200).json({ events });
     } catch (error) {
       next(error);
@@ -62,6 +68,7 @@ export function createEventRoutes(eventService: EventService, authService: AuthS
       const event = await eventService.createEvent({
         organizerId: user.id,
         title: input.title,
+        artists: input.artists,
         venue: input.venue,
         city: input.city,
         startAt: input.startAt,

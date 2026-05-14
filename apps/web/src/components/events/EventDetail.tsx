@@ -8,7 +8,8 @@ import { getEvent } from "@/lib/api/events";
 import { ApiClientError } from "@/lib/api/client";
 import { listListings } from "@/lib/api/listings";
 import { ListingCard } from "../listings/ListingCard";
-import { Button } from "../ui/Button";
+import { Alert } from "../ui/Alert";
+import { ButtonLink } from "../ui/ButtonLink";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
 interface EventDetailProps {
@@ -20,25 +21,26 @@ export function EventDetail({ eventId }: EventDetailProps) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [listingsErrorMessage, setListingsErrorMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadEventDetail() {
+      setIsLoading(true);
+      setErrorMessage("");
+      setListingsErrorMessage("");
       try {
-        const [eventResponse, listingsResponse] = await Promise.all([
-          getEvent(eventId),
-          listListings(eventId)
-        ]);
+        const eventResponse = await getEvent(eventId);
         if (!cancelled) {
           setEvent(eventResponse);
-          setListings(listingsResponse);
         }
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
             error instanceof ApiClientError ? error.message : "Could not load event details."
           );
+          setListings([]);
         }
       } finally {
         if (!cancelled) {
@@ -47,7 +49,26 @@ export function EventDetail({ eventId }: EventDetailProps) {
       }
     }
 
+    async function loadListings() {
+      try {
+        const listingsResponse = await listListings(eventId);
+        if (!cancelled) {
+          setListings(listingsResponse);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setListings([]);
+          setListingsErrorMessage(
+            error instanceof ApiClientError
+              ? error.message
+              : "Could not load ticket listings right now."
+          );
+        }
+      }
+    }
+
     void loadEventDetail();
+    void loadListings();
 
     return () => {
       cancelled = true;
@@ -55,15 +76,15 @@ export function EventDetail({ eventId }: EventDetailProps) {
   }, [eventId]);
 
   if (isLoading) {
-    return <p className="muted-text text-sm">Loading event details...</p>;
+    return (
+      <p className="muted-text text-sm" role="status" aria-live="polite">
+        Loading event details...
+      </p>
+    );
   }
 
   if (errorMessage) {
-    return (
-      <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
-        {errorMessage}
-      </p>
-    );
+    return <Alert tone="error" announce="assertive">{errorMessage}</Alert>;
   }
 
   if (!event) {
@@ -72,12 +93,22 @@ export function EventDetail({ eventId }: EventDetailProps) {
 
   return (
     <div className="grid gap-6">
+      <nav className="flex items-center gap-2 text-sm">
+        <Link href="/events" className="muted-text underline underline-offset-4">
+          Back to events
+        </Link>
+        <span className="muted-text">/</span>
+        <span className="muted-text">Event details</span>
+      </nav>
       <SurfaceCard className="grid gap-3 p-6 sm:p-8">
         <p className="muted-text text-xs uppercase tracking-[0.18em]">{event.city}</p>
         <h1 className="brand-heading text-3xl font-semibold">{event.title}</h1>
+        {event.artists.length ? (
+          <p className="muted-text text-sm">Artists: {event.artists.join(", ")}</p>
+        ) : null}
         {event.isHouseMusic ? (
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-[rgba(62,164,255,0.95)]">
-            House Music Event
+            Featured Event
           </p>
         ) : null}
         <p className="muted-text text-sm">
@@ -85,14 +116,15 @@ export function EventDetail({ eventId }: EventDetailProps) {
         </p>
         {event.description ? <p className="text-sm text-white/90">{event.description}</p> : null}
         <div className="pt-2">
-          <Link href={`/listings/new?eventId=${encodeURIComponent(event.id)}`}>
-            <Button>Sell tickets for this event</Button>
-          </Link>
+          <ButtonLink href={`/listings/new?eventId=${encodeURIComponent(event.id)}`}>
+            Sell tickets for this event
+          </ButtonLink>
         </div>
       </SurfaceCard>
 
       <section className="grid gap-3">
         <h2 className="brand-heading text-xl font-semibold">Available ticket listings</h2>
+        {listingsErrorMessage ? <Alert tone="error">{listingsErrorMessage}</Alert> : null}
         {listings.length ? (
           <div className="grid gap-3">
             {listings.map((listing) => (

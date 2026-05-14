@@ -16,6 +16,9 @@ export interface CreateListingInput {
 export interface ListingResponse {
   id: string;
   eventId: string;
+  eventTitle: string;
+  eventCity: string;
+  eventStartAt: string;
   sellerId: string;
   title: string;
   priceCents: number;
@@ -40,7 +43,7 @@ export class ListingService {
   ) {}
 
   async createListing(input: CreateListingInput): Promise<ListingResponse> {
-    await this.eventService.getEventById(input.eventId);
+    const event = await this.eventService.getEventById(input.eventId);
     const now = new Date();
     const listing: Listing = {
       id: crypto.randomUUID(),
@@ -56,7 +59,7 @@ export class ListingService {
     };
 
     const created = await this.listingRepository.create(listing);
-    return this.toResponse(created);
+    return this.toResponse(created, event);
   }
 
   async listListings(filters: {
@@ -65,11 +68,11 @@ export class ListingService {
     includeSoldOut?: boolean;
   }): Promise<ListingResponse[]> {
     const listings = await this.listingRepository.list();
-    return listings
+    const filtered = listings
       .filter((listing) => (filters.eventId ? listing.eventId === filters.eventId : true))
       .filter((listing) => (filters.sellerId ? listing.sellerId === filters.sellerId : true))
-      .filter((listing) => (filters.includeSoldOut ? true : !listing.soldOut))
-      .map((listing) => this.toResponse(listing));
+      .filter((listing) => (filters.includeSoldOut ? true : !listing.soldOut));
+    return Promise.all(filtered.map((listing) => this.toResponse(listing)));
   }
 
   async getListingById(listingId: string): Promise<ListingResponse> {
@@ -108,17 +111,21 @@ export class ListingService {
     const saved = await this.listingRepository.update(updatedListing);
 
     return {
-      listing: this.toResponse(saved),
+      listing: await this.toResponse(saved),
       purchasedQuantity: input.quantity,
       totalPriceCents: saved.priceCents * input.quantity,
       message: "Purchase confirmed."
     };
   }
 
-  private toResponse(listing: Listing): ListingResponse {
+  private async toResponse(listing: Listing, eventInput?: Awaited<ReturnType<EventService["getEventById"]>>): Promise<ListingResponse> {
+    const event = eventInput ?? (await this.eventService.getEventById(listing.eventId));
     return {
       id: listing.id,
       eventId: listing.eventId,
+      eventTitle: event.title,
+      eventCity: event.city,
+      eventStartAt: event.startAt,
       sellerId: listing.sellerId,
       title: listing.title,
       priceCents: listing.priceCents,

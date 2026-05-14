@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { AuthUser } from "@/lib/api/auth";
 import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
 
 export function DashboardPanel() {
@@ -56,7 +57,11 @@ export function DashboardPanel() {
   }, [router]);
 
   if (isLoading) {
-    return <p className="muted-text text-sm">Loading your dashboard...</p>;
+    return (
+      <p className="muted-text text-sm" role="status" aria-live="polite">
+        Loading your dashboard...
+      </p>
+    );
   }
 
   return (
@@ -69,25 +74,25 @@ export function DashboardPanel() {
               {user ? `Welcome, ${user.displayName}` : "Welcome"}
             </h1>
             <p className="muted-text mt-2 text-sm">
-              You are signed in and ready to browse house events, post listings, and manage sales.
+              You are signed in and ready to browse events, post listings, and manage sales.
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/events">
-              <Button variant="secondary">Browse events</Button>
-            </Link>
-            <Link href="/listings/new">
-              <Button variant="ghost">Sell tickets</Button>
-            </Link>
-            <Link href="/account">
-              <Button variant="ghost">My account</Button>
-            </Link>
+            <ButtonLink href="/events" variant="secondary">
+              Browse events
+            </ButtonLink>
+            <ButtonLink href="/listings/new" variant="ghost">
+              Sell tickets
+            </ButtonLink>
+            <ButtonLink href="/account" variant="ghost">
+              My account
+            </ButtonLink>
           </div>
         </div>
         {errorMessage ? (
-          <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+          <Alert tone="error" announce="assertive">
             {errorMessage}
-          </p>
+          </Alert>
         ) : null}
       </SurfaceCard>
 
@@ -106,8 +111,11 @@ export function DashboardPanel() {
         </SurfaceCard>
         <SurfaceCard className="p-5" elevated={false}>
           <p className="muted-text text-xs uppercase tracking-[0.16em]">Quick action</p>
-          <p className="brand-heading mt-3 text-base font-medium">Continue setup</p>
-          <p className="muted-text mt-1 text-sm">Add listing details and preferences next.</p>
+          <p className="brand-heading mt-3 text-base font-medium">List your next ticket</p>
+          <p className="muted-text mt-1 text-sm">Create a listing in under a minute.</p>
+          <ButtonLink href="/listings/new" variant="ghost" className="mt-3 h-9 px-3">
+            Create listing
+          </ButtonLink>
         </SurfaceCard>
       </div>
 

@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { MyListings } from "@/components/listings/MyListings";
+
+export const metadata: Metadata = {
+  title: "My Listings | Ticket Splice",
+  description: "Manage active and sold ticket listings."
+};
 
 export default function MyListingsPage() {
   return (
