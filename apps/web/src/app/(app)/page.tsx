@@ -7,20 +7,22 @@ export default function Home() {
     <section className="page-shell flex flex-1 flex-col py-12 sm:py-16">
       <section className="grid gap-8">
         <div className="grid gap-6">
-         
           <h1 className="brand-heading max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-            Clean ticket buying and selling with social coordination built in.
+            Buy and sell tickets for house music events without marketplace friction.
           </h1>
           <p className="muted-text max-w-2xl text-base leading-relaxed sm:text-lg">
-            Ticket Splice is built for quick ticket exchanges, trusted communication, and a premium
-            event experience without platform buyer or seller fees.
+            Ticket Splice is built for the house community: discover current events, post verified
+            listings fast, and move tickets in minutes.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/auth/register">
-              <Button>Create account</Button>
+            <Link href="/events">
+              <Button>Browse house events</Button>
             </Link>
-            <Link href="/auth/login">
-              <Button variant="secondary">Log in</Button>
+            <Link href="/events/new">
+              <Button variant="secondary">Add an event</Button>
+            </Link>
+            <Link href="/listings/new">
+              <Button variant="ghost">Sell tickets</Button>
             </Link>
           </div>
         </div>
@@ -28,9 +30,9 @@ export default function Home() {
 
       <section className="mt-12 grid gap-4 md:grid-cols-3">
         <SurfaceCard className="p-5" elevated={false}>
-          <h2 className="brand-heading text-lg font-medium">Simple posting flow</h2>
+          <h2 className="brand-heading text-lg font-medium">House-first discovery</h2>
           <p className="muted-text mt-2 text-sm leading-6">
-            Create listings with clear details and proof upload support.
+            Current house events are auto-pulled and ready for listing in one tap.
           </p>
         </SurfaceCard>
         <SurfaceCard className="p-5" elevated={false}>
@@ -40,7 +42,7 @@ export default function Home() {
           </p>
         </SurfaceCard>
         <SurfaceCard className="p-5" elevated={false}>
-          <h2 className="brand-heading text-lg font-medium">Designed for speed</h2>
+          <h2 className="brand-heading text-lg font-medium">Designed for quick transfers</h2>
           <p className="muted-text mt-2 text-sm leading-6">
             Mobile-friendly controls and clean interfaces for fast actions.
           </p>

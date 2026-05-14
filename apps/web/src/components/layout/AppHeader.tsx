@@ -36,6 +36,21 @@ export function AppHeader() {
         <nav className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
+              <Link href="/events">
+                <Button variant="ghost" className="h-9 px-4">
+                  House events
+                </Button>
+              </Link>
+              <Link href="/events/new">
+                <Button variant="ghost" className="h-9 px-4">
+                  Add event
+                </Button>
+              </Link>
+              <Link href="/listings/mine">
+                <Button variant="ghost" className="h-9 px-4">
+                  Listings
+                </Button>
+              </Link>
               <Link href="/dashboard">
                 <Button variant="ghost" className="h-9 px-4">
                   Dashboard

@@ -69,12 +69,15 @@ export function DashboardPanel() {
               {user ? `Welcome, ${user.displayName}` : "Welcome"}
             </h1>
             <p className="muted-text mt-2 text-sm">
-              You are signed in and ready to browse listings or manage your account.
+              You are signed in and ready to browse house events, post listings, and manage sales.
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/">
+            <Link href="/events">
               <Button variant="secondary">Browse events</Button>
+            </Link>
+            <Link href="/listings/new">
+              <Button variant="ghost">Sell tickets</Button>
             </Link>
             <Link href="/account">
               <Button variant="ghost">My account</Button>
