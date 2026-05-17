@@ -27,7 +27,12 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
-  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional()
+  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional(),
+  TICKETMASTER_API_KEY: z.string().optional(),
+  TICKETMASTER_COUNTRY_CODE: z.string().length(2).default("US"),
+  TICKETMASTER_KEYWORD: z.string().default("music"),
+  TICKETMASTER_CITY: z.string().optional(),
+  TICKETMASTER_SIZE: z.coerce.number().int().min(1).max(200).default(75)
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

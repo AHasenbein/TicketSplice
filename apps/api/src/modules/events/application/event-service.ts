@@ -2,6 +2,11 @@ import crypto from "node:crypto";
 import { HttpError } from "../../../shared/http-error.js";
 import type { Event } from "../domain/event.js";
 import type { EventRepository } from "../domain/event-repository.js";
+import type {
+  EventFeedProvider,
+  ExternalEvent,
+  ExternalEventSearchInput
+} from "./providers/event-feed-provider.js";
 
 export interface CreateEventInput {
   organizerId: string;
@@ -30,28 +35,21 @@ interface ListEventsInput {
   houseOnly?: boolean;
   upcomingOnly?: boolean;
   query?: string;
+  artist?: string;
+  city?: string;
   limit?: number;
 }
 
-interface GoabaseParty {
-  id: number;
-  nameParty: string;
-  dateStart: string;
-  nameType?: string;
-  nameCountry?: string;
-  nameTown?: string;
-  urlPartyHtml?: string;
-}
-
-interface GoabaseResponse {
-  partylist?: GoabaseParty[];
-}
-
 export class EventService {
-  private lastHouseSyncAt: number | null = null;
-  private activeHouseSync: Promise<void> | null = null;
+  private lastSyncAt: number | null = null;
+  private activeSync: Promise<void> | null = null;
+  private topArtistCache: string[] = [];
+  private topArtistCacheAt: number | null = null;
 
-  constructor(private readonly eventRepository: EventRepository) {}
+  constructor(
+    private readonly eventRepository: EventRepository,
+    private readonly eventFeedProviders: EventFeedProvider[] = []
+  ) {}
 
   async createEvent(input: CreateEventInput): Promise<EventResponse> {
     const startAt = new Date(input.startAt);
@@ -75,9 +73,20 @@ export class EventService {
   }
 
   async listEvents(input: ListEventsInput = {}): Promise<EventResponse[]> {
+    if (input.query || input.artist || input.city) {
+      await this.pullFromProvidersWithSearch({
+        query: input.query,
+        artist: input.artist,
+        city: input.city,
+        limit: Math.max(25, input.limit ?? 40)
+      });
+    }
+
     const events = await this.eventRepository.list();
     const now = Date.now();
     const normalizedQuery = input.query?.trim().toLowerCase();
+    const normalizedArtist = input.artist?.trim().toLowerCase();
+    const normalizedCity = input.city?.trim().toLowerCase();
     const filtered = events
       .filter((event) => (input.upcomingOnly ?? true ? event.startAt.getTime() >= now : true))
       .filter((event) => (input.houseOnly ? this.isHouseEvent(event) : true))
@@ -85,6 +94,14 @@ export class EventService {
         normalizedQuery
           ? `${event.title} ${event.venue} ${event.city} ${event.description ?? ""} ${event.artists.join(" ")}`.toLowerCase().includes(normalizedQuery)
           : true
+      )
+      .filter((event) =>
+        normalizedArtist
+          ? event.artists.some((artist) => artist.toLowerCase().includes(normalizedArtist))
+          : true
+      )
+      .filter((event) =>
+        normalizedCity ? event.city.toLowerCase().includes(normalizedCity) : true
       );
 
     const limited = input.limit && input.limit > 0 ? filtered.slice(0, input.limit) : filtered;
@@ -100,74 +117,86 @@ export class EventService {
     return this.toResponse(event);
   }
 
-  async syncCurrentHouseEvents(): Promise<void> {
-    const now = Date.now();
-    if (this.lastHouseSyncAt && now - this.lastHouseSyncAt < 1000 * 60 * 30) {
-      return;
+  async listArtistSuggestions(input: { query?: string; limit?: number } = {}): Promise<string[]> {
+    const limit = Math.max(1, Math.min(input.limit ?? 20, 500));
+    const normalizedQuery = input.query?.trim().toLowerCase();
+
+    await this.ensureTopArtistCache();
+
+    let suggestions = this.topArtistCache;
+    if (normalizedQuery) {
+      suggestions = suggestions.filter((artist) => artist.toLowerCase().includes(normalizedQuery));
     }
 
-    if (this.activeHouseSync) {
-      await this.activeHouseSync;
-      return;
+    if (suggestions.length < limit && normalizedQuery) {
+      const providerResults = await Promise.all(
+        this.eventFeedProviders.map((provider) =>
+          provider.fetchArtistSuggestions?.({ query: normalizedQuery, limit: 100 }) ?? Promise.resolve([])
+        )
+      );
+      const merged = new Set([...this.topArtistCache, ...providerResults.flat()]);
+      this.topArtistCache = Array.from(merged).slice(0, 500);
+      suggestions = this.topArtistCache.filter((artist) =>
+        artist.toLowerCase().includes(normalizedQuery)
+      );
     }
 
-    this.activeHouseSync = this.pullFromGoabase().finally(() => {
-      this.activeHouseSync = null;
-      this.lastHouseSyncAt = Date.now();
-    });
-    await this.activeHouseSync;
+    return suggestions.slice(0, limit);
   }
 
-  private async pullFromGoabase(): Promise<void> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
-    try {
-      const url = new URL("https://www.goabase.net/api/party/json/");
-      url.searchParams.set("saAtt[search]", "house");
-      const response = await fetch(url, { signal: controller.signal });
-      if (!response.ok) {
-        return;
-      }
-
-      const payload = (await response.json()) as GoabaseResponse;
-      const parties = payload.partylist ?? [];
-
-      for (const party of parties.slice(0, 40)) {
-        const startAt = new Date(party.dateStart);
-        if (Number.isNaN(startAt.getTime())) {
-          continue;
-        }
-
-        const title = party.nameParty?.trim();
-        if (!title) {
-          continue;
-        }
-
-        const city = party.nameTown?.trim() || party.nameCountry?.trim() || "Unknown";
-        const venue = party.nameType?.trim() || "House Music Event";
-        const details: string[] = ["Live house music event imported from Goabase."];
-        if (party.urlPartyHtml) {
-          details.push(`More info: ${party.urlPartyHtml}`);
-        }
-
-        await this.eventRepository.create({
-          id: `goabase-${party.id}`,
-          organizerId: "goabase",
-          title,
-          artists: [],
-          venue,
-          city,
-          startAt,
-          description: details.join(" "),
-          createdAt: new Date()
-        });
-      }
-    } catch {
-      // MVP behavior: if provider fails, keep serving locally-seeded events.
-    } finally {
-      clearTimeout(timeout);
+  async syncCurrentHouseEvents(): Promise<void> {
+    const now = Date.now();
+    if (this.lastSyncAt && now - this.lastSyncAt < 1000 * 60 * 20) {
+      return;
     }
+
+    if (this.activeSync) {
+      await this.activeSync;
+      return;
+    }
+
+    this.activeSync = this.pullFromProvidersWithSearch({}).finally(() => {
+      this.activeSync = null;
+      this.lastSyncAt = Date.now();
+    });
+    await this.activeSync;
+  }
+
+  private async pullFromProvidersWithSearch(searchInput: ExternalEventSearchInput): Promise<void> {
+    if (!this.eventFeedProviders.length) {
+      return;
+    }
+
+    const providerResults = await Promise.all(
+      this.eventFeedProviders.map(async (provider) => {
+        const events = await provider.fetchUpcomingEvents(searchInput);
+        return { provider, events };
+      })
+    );
+
+    for (const result of providerResults) {
+      for (const externalEvent of result.events) {
+        await this.persistExternalEvent(result.provider.name, externalEvent);
+      }
+    }
+  }
+
+  private async ensureTopArtistCache(): Promise<void> {
+    const now = Date.now();
+    if (this.topArtistCacheAt && now - this.topArtistCacheAt < 1000 * 60 * 60 * 12) {
+      return;
+    }
+
+    const providerResults = await Promise.all(
+      this.eventFeedProviders.map((provider) =>
+        provider.fetchArtistSuggestions?.({ query: "house", limit: 500 }) ?? Promise.resolve([])
+      )
+    );
+
+    const eventArtists = (await this.eventRepository.list()).flatMap((event) => event.artists);
+    const merged = new Set([...providerResults.flat(), ...eventArtists]);
+    this.topArtistCache = Array.from(merged).slice(0, 500);
+    this.topArtistCacheAt = now;
   }
 
   private isHouseEvent(event: Event): boolean {
@@ -196,6 +225,34 @@ export class EventService {
       isHouseMusic: this.isHouseEvent(event),
       createdAt: event.createdAt.toISOString()
     };
+  }
+
+  private async persistExternalEvent(providerName: string, externalEvent: ExternalEvent): Promise<void> {
+    const startAt = new Date(externalEvent.startAt);
+    if (Number.isNaN(startAt.getTime())) {
+      return;
+    }
+
+    const title = externalEvent.title.trim();
+    if (!title) {
+      return;
+    }
+
+    const description = [externalEvent.description?.trim(), externalEvent.sourceUrl?.trim()]
+      .filter(Boolean)
+      .join(" ");
+
+    await this.eventRepository.create({
+      id: `${providerName}-${externalEvent.externalId}`,
+      organizerId: providerName,
+      title,
+      artists: this.normalizeArtists(externalEvent.artists),
+      venue: externalEvent.venue.trim() || "Live Event",
+      city: externalEvent.city.trim() || "Unknown",
+      startAt,
+      description: description || undefined,
+      createdAt: new Date()
+    });
   }
 
   private normalizeArtists(input?: string[]): string[] {

@@ -25,24 +25,39 @@ function extractBearerToken(authorizationHeader?: string): string {
 export function createEventRoutes(eventService: EventService, authService: AuthService): Router {
   const router = Router();
 
+  router.get("/artists", async (req, res, next) => {
+    try {
+      const query = typeof req.query.q === "string" ? req.query.q : undefined;
+      const limit =
+        typeof req.query.limit === "string" && Number.isFinite(Number(req.query.limit))
+          ? Number(req.query.limit)
+          : undefined;
+      const artists = await eventService.listArtistSuggestions({ query, limit });
+      res.status(200).json({ artists });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get("/", async (req, res, next) => {
     try {
-      const houseOnly =
-        typeof req.query.houseOnly === "string"
-          ? req.query.houseOnly.toLowerCase() !== "false"
-          : true;
-      const upcomingOnly =
-        typeof req.query.upcomingOnly === "string"
-          ? req.query.upcomingOnly.toLowerCase() !== "false"
-          : true;
       const query = typeof req.query.q === "string" ? req.query.q : undefined;
+      const artist = typeof req.query.artist === "string" ? req.query.artist : undefined;
+      const city = typeof req.query.city === "string" ? req.query.city : undefined;
       const limit =
         typeof req.query.limit === "string" && Number.isFinite(Number(req.query.limit))
           ? Number(req.query.limit)
           : undefined;
 
       await eventService.syncCurrentHouseEvents();
-      const events = await eventService.listEvents({ houseOnly, upcomingOnly, query, limit });
+      const events = await eventService.listEvents({
+        houseOnly: false,
+        upcomingOnly: true,
+        query,
+        artist,
+        city,
+        limit
+      });
       res.status(200).json({ events });
     } catch (error) {
       next(error);

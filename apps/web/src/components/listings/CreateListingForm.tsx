@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ApiClientError } from "@/lib/api/client";
 import { createListing } from "@/lib/api/listings";
-import { getEvent, listEvents } from "@/lib/api/events";
+import { getEvent, listArtistSuggestions, listEvents } from "@/lib/api/events";
 import type { Event } from "@/lib/api/events";
 import { readAuthToken } from "@/lib/auth/token-storage";
 import { Alert } from "../ui/Alert";
@@ -20,8 +20,13 @@ export function CreateListingForm() {
   const [eventId, setEventId] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState("");
+  const [artistSearchQuery, setArtistSearchQuery] = useState("");
+  const [citySearchQuery, setCitySearchQuery] = useState("");
   const [debouncedEventSearchQuery, setDebouncedEventSearchQuery] = useState("");
+  const [debouncedArtistSearchQuery, setDebouncedArtistSearchQuery] = useState("");
+  const [debouncedCitySearchQuery, setDebouncedCitySearchQuery] = useState("");
   const [eventSuggestions, setEventSuggestions] = useState<Event[]>([]);
+  const [artistSuggestions, setArtistSuggestions] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -34,14 +39,50 @@ export function CreateListingForm() {
   const [eventSearchError, setEventSearchError] = useState("");
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const eventTimeout = setTimeout(() => {
       setDebouncedEventSearchQuery(eventSearchQuery.trim());
+    }, 150);
+    const artistTimeout = setTimeout(() => {
+      setDebouncedArtistSearchQuery(artistSearchQuery.trim());
+    }, 150);
+    const cityTimeout = setTimeout(() => {
+      setDebouncedCitySearchQuery(citySearchQuery.trim());
     }, 150);
 
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(eventTimeout);
+      clearTimeout(artistTimeout);
+      clearTimeout(cityTimeout);
     };
-  }, [eventSearchQuery]);
+  }, [eventSearchQuery, artistSearchQuery, citySearchQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadArtistSuggestions() {
+      if (!debouncedArtistSearchQuery) {
+        setArtistSuggestions([]);
+        return;
+      }
+
+      try {
+        const suggestions = await listArtistSuggestions(debouncedArtistSearchQuery, 12);
+        if (!cancelled) {
+          setArtistSuggestions(suggestions);
+        }
+      } catch {
+        if (!cancelled) {
+          setArtistSuggestions([]);
+        }
+      }
+    }
+
+    void loadArtistSuggestions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedArtistSearchQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,9 +90,9 @@ export function CreateListingForm() {
       setIsLoadingEvents(true);
       try {
         const response = await listEvents({
-          houseOnly: false,
-          upcomingOnly: true,
           query: debouncedEventSearchQuery || undefined,
+          artist: debouncedArtistSearchQuery || undefined,
+          city: debouncedCitySearchQuery || undefined,
           limit: 8
         });
         if (!cancelled) {
@@ -74,7 +115,7 @@ export function CreateListingForm() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedEventSearchQuery]);
+  }, [debouncedEventSearchQuery, debouncedArtistSearchQuery, debouncedCitySearchQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -171,21 +212,57 @@ export function CreateListingForm() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <label className="grid gap-1.5 text-sm">
-            <span className="muted-text">Find event (title or artist)</span>
-            <input
-              className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
-              onChange={(event) => {
-                setEventSearchQuery(event.target.value);
-                setEventId("");
-                setSelectedEvent(null);
-              }}
-              disabled={isSubmitting}
-              required
-              value={eventSearchQuery}
-              placeholder="Search artists, event names, city..."
-            />
-          </label>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="grid gap-1.5 text-sm">
+              <span className="muted-text">Event</span>
+              <input
+                className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                onChange={(event) => {
+                  setEventSearchQuery(event.target.value);
+                  setEventId("");
+                  setSelectedEvent(null);
+                }}
+                disabled={isSubmitting}
+                required
+                value={eventSearchQuery}
+                placeholder="Event name"
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="muted-text">Artist</span>
+              <input
+                list="listing-artist-suggestions"
+                className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                onChange={(event) => {
+                  setArtistSearchQuery(event.target.value);
+                  setEventId("");
+                  setSelectedEvent(null);
+                }}
+                disabled={isSubmitting}
+                value={artistSearchQuery}
+                placeholder="Artist name"
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="muted-text">City</span>
+              <input
+                className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                onChange={(event) => {
+                  setCitySearchQuery(event.target.value);
+                  setEventId("");
+                  setSelectedEvent(null);
+                }}
+                disabled={isSubmitting}
+                value={citySearchQuery}
+                placeholder="City"
+              />
+            </label>
+          </div>
+          <datalist id="listing-artist-suggestions">
+            {artistSuggestions.map((artist) => (
+              <option key={artist} value={artist} />
+            ))}
+          </datalist>
           {eventSearchError ? <Alert tone="error">{eventSearchError}</Alert> : null}
           {eventSuggestions.length ? (
             <div className="grid gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2">

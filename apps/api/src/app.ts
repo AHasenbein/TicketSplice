@@ -13,6 +13,7 @@ import { GoogleOAuthProvider } from "./modules/auth/infrastructure/google-oauth-
 import { env } from "./config/env.js";
 import { HttpError } from "./shared/http-error.js";
 import { EventService } from "./modules/events/application/event-service.js";
+import { TicketmasterFeedProvider } from "./modules/events/application/providers/ticketmaster-feed-provider.js";
 import { InMemoryEventRepository } from "./modules/events/infrastructure/in-memory-event-repository.js";
 import { createEventRoutes } from "./modules/events/presentation/event-routes.js";
 import { InMemoryListingRepository } from "./modules/listings/infrastructure/in-memory-listing-repository.js";
@@ -34,8 +35,21 @@ export function createApp() {
       ? [new GoogleOAuthProvider()]
       : []
   );
+  const eventFeedProviders = [
+    ...(env.TICKETMASTER_API_KEY
+      ? [
+          new TicketmasterFeedProvider({
+            apiKey: env.TICKETMASTER_API_KEY,
+            countryCode: env.TICKETMASTER_COUNTRY_CODE,
+            keyword: env.TICKETMASTER_KEYWORD,
+            city: env.TICKETMASTER_CITY,
+            size: env.TICKETMASTER_SIZE
+          })
+        ]
+      : [])
+  ];
   const eventRepository = new InMemoryEventRepository();
-  const eventService = new EventService(eventRepository);
+  const eventService = new EventService(eventRepository, eventFeedProviders);
   const listingRepository = new InMemoryListingRepository();
   const listingService = new ListingService(listingRepository, eventService);
 
