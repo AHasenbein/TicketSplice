@@ -22,7 +22,6 @@ export function AppHeader() {
     { href: "/dashboard", label: "Dashboard" }
   ];
   const authedSecondaryItems: NavItem[] = [
-    { href: "/events/new", label: "Add event" },
     { href: "/listings/mine", label: "My listings" },
     { href: "/account", label: "Account" }
   ];
@@ -65,24 +64,17 @@ export function AppHeader() {
                     {item.label}
                   </ButtonLink>
                 ))}
-                <details className="group relative">
-                  <summary className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                    More
-                  </summary>
-                  <div className="absolute right-0 z-20 mt-2 grid min-w-44 gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
-                    {authedSecondaryItems.map((item) => (
-                      <ButtonLink
-                        key={item.href}
-                        href={item.href}
-                        variant={isActive(item.href) ? "secondary" : "ghost"}
-                        className="h-9 justify-start px-3"
-                        aria-current={isActive(item.href) ? "page" : undefined}
-                      >
-                        {item.label}
-                      </ButtonLink>
-                    ))}
-                  </div>
-                </details>
+                {authedSecondaryItems.map((item) => (
+                  <ButtonLink
+                    key={item.href}
+                    href={item.href}
+                    variant={isActive(item.href) ? "secondary" : "ghost"}
+                    className="h-9 px-4"
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </ButtonLink>
+                ))}
               </div>
               <details className="relative md:hidden">
                 <summary className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">

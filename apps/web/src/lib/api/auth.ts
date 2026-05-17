@@ -18,6 +18,29 @@ interface MeResponse {
   user: AuthUser;
 }
 
+export interface AccountOverview {
+  wishlistedEvents: Array<{
+    id: string;
+    title: string;
+    city: string;
+    startAt: string;
+  }>;
+  boughtEvents: Array<{
+    eventId: string;
+    eventTitle: string;
+    city: string;
+    totalSpentCents: number;
+    totalTickets: number;
+  }>;
+  sellingEvents: Array<{
+    eventId: string;
+    eventTitle: string;
+    city: string;
+    active: boolean;
+    listingId: string;
+  }>;
+}
+
 export interface RegisterInput {
   email: string;
   displayName: string;
@@ -52,6 +75,28 @@ export function login(input: LoginInput): Promise<AuthResponse> {
 
 export function getCurrentUser(token: string): Promise<MeResponse> {
   return apiRequest<MeResponse>("/api/v1/auth/me", {
+    token
+  });
+}
+
+export function getAccountOverview(token: string): Promise<AccountOverview> {
+  return apiRequest<AccountOverview>("/api/v1/auth/account/overview", { token });
+}
+
+export function addEventToWishlist(eventId: string, token: string): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>("/api/v1/auth/account/wishlist", {
+    method: "POST",
+    token,
+    body: JSON.stringify({ eventId })
+  });
+}
+
+export function removeEventFromWishlist(
+  eventId: string,
+  token: string
+): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>(`/api/v1/auth/account/wishlist/${eventId}`, {
+    method: "DELETE",
     token
   });
 }

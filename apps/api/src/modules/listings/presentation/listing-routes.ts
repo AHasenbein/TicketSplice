@@ -6,11 +6,24 @@ import { AuthService } from "../../auth/application/auth-service.js";
 import { ListingService } from "../application/listing-service.js";
 
 const createListingSchema = z.object({
-  eventId: z.string().uuid(),
-  title: z.string().trim().min(2).max(120),
+  eventId: z.string().min(1).optional(),
+  eventTitle: z.string().trim().min(2).max(160).optional(),
+  eventArtist: z.string().trim().max(120).optional(),
+  eventCity: z.string().trim().max(80).optional(),
+  eventStartAt: z.string().datetime().optional(),
+  title: z.string().trim().min(2).max(120).optional(),
+  seatType: z.enum(["GA", "VIP", "OTHER"]),
   priceCents: z.number().int().min(100),
   quantity: z.number().int().min(1).max(20),
   notes: z.string().trim().max(600).optional()
+}).superRefine((value, context) => {
+  if (!value.eventId && !value.eventTitle) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Select an existing event or enter a new event title.",
+      path: ["eventTitle"]
+    });
+  }
 });
 
 const purchaseSchema = z.object({
@@ -58,6 +71,22 @@ export function createListingRoutes(
     }
   });
 
+  router.get("/market", async (req, res, next) => {
+    try {
+      const query = typeof req.query.q === "string" ? req.query.q : undefined;
+      const artist = typeof req.query.artist === "string" ? req.query.artist : undefined;
+      const city = typeof req.query.city === "string" ? req.query.city : undefined;
+      const limit =
+        typeof req.query.limit === "string" && Number.isFinite(Number(req.query.limit))
+          ? Number(req.query.limit)
+          : undefined;
+      const events = await listingService.listMarketEventSuggestions({ query, artist, city, limit });
+      res.status(200).json({ events });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get("/:listingId", async (req, res, next) => {
     try {
       const listing = await listingService.getListingById(req.params.listingId);
@@ -75,7 +104,12 @@ export function createListingRoutes(
       const listing = await listingService.createListing({
         sellerId: user.id,
         eventId: input.eventId,
+        eventTitle: input.eventTitle,
+        eventArtist: input.eventArtist,
+        eventCity: input.eventCity,
+        eventStartAt: input.eventStartAt,
         title: input.title,
+        seatType: input.seatType,
         priceCents: input.priceCents,
         quantity: input.quantity,
         notes: input.notes

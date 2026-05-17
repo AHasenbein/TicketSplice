@@ -21,10 +21,6 @@ interface EventResponse {
   event: Event;
 }
 
-interface ArtistSuggestionsResponse {
-  artists: string[];
-}
-
 export interface CreateEventInput {
   title: string;
   artists?: string[];
@@ -36,7 +32,6 @@ export interface CreateEventInput {
 
 interface ListEventsOptions {
   query?: string;
-  artist?: string;
   city?: string;
   limit?: number;
 }
@@ -45,9 +40,6 @@ export async function listEvents(options: ListEventsOptions = {}): Promise<Event
   const query = new URLSearchParams();
   if (options.query?.trim()) {
     query.set("q", options.query.trim());
-  }
-  if (options.artist?.trim()) {
-    query.set("artist", options.artist.trim());
   }
   if (options.city?.trim()) {
     query.set("city", options.city.trim());
@@ -65,18 +57,6 @@ export async function getEvent(eventId: string): Promise<Event> {
   return response.event;
 }
 
-export async function listArtistSuggestions(query: string, limit = 20): Promise<string[]> {
-  const params = new URLSearchParams();
-  if (query.trim()) {
-    params.set("q", query.trim());
-  }
-  params.set("limit", String(limit));
-  const response = await apiRequest<ArtistSuggestionsResponse>(
-    `/api/v1/events/artists?${params.toString()}`
-  );
-  return response.artists;
-}
-
 export async function createEvent(input: CreateEventInput, token: string): Promise<Event> {
   const response = await apiRequest<EventResponse>("/api/v1/events", {
     method: "POST",
@@ -84,4 +64,27 @@ export async function createEvent(input: CreateEventInput, token: string): Promi
     body: JSON.stringify(input)
   });
   return response.event;
+}
+
+export async function deleteAllEventsLocal(token: string): Promise<{
+  message: string;
+  deleted: {
+    events: number;
+    listings: number;
+    purchases: number;
+    wishlists: number;
+  };
+}> {
+  return apiRequest<{
+    message: string;
+    deleted: {
+      events: number;
+      listings: number;
+      purchases: number;
+      wishlists: number;
+    };
+  }>("/api/v1/events/admin/all", {
+    method: "DELETE",
+    token
+  });
 }

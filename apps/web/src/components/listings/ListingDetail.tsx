@@ -139,6 +139,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
         Event time: {new Date(listing.eventStartAt).toLocaleString()}
       </p>
       <p className="text-sm text-white/90">${(listing.priceCents / 100).toFixed(2)} per ticket</p>
+      <p className="muted-text text-sm">Seat type: {listing.seatType}</p>
       <p className="muted-text text-sm">
         {listing.quantity} ticket{listing.quantity === 1 ? "" : "s"} available
       </p>

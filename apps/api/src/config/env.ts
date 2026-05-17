@@ -16,6 +16,9 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().default(4000),
   JWT_SECRET: z.string().min(24, "JWT_SECRET must be at least 24 characters"),
   APP_WEB_URL: z.url().default("http://localhost:3000"),
+  CORS_ORIGIN: z.string().default("http://localhost:3000"),
+  MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+  MONGODB_DB_NAME: z.string().min(1).default("ticketsplice"),
   EMAIL_FROM: z.email().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
@@ -27,12 +30,7 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
-  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional(),
-  TICKETMASTER_API_KEY: z.string().optional(),
-  TICKETMASTER_COUNTRY_CODE: z.string().length(2).default("US"),
-  TICKETMASTER_KEYWORD: z.string().default("music"),
-  TICKETMASTER_CITY: z.string().optional(),
-  TICKETMASTER_SIZE: z.coerce.number().int().min(1).max(200).default(75)
+  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

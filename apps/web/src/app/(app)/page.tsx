@@ -15,9 +15,6 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <ButtonLink href="/events">Browse events</ButtonLink>
-            <ButtonLink href="/events/new" variant="secondary">
-              Add an event
-            </ButtonLink>
             <ButtonLink href="/listings/new" variant="ghost">
               Sell tickets
             </ButtonLink>

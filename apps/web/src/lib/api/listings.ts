@@ -8,6 +8,7 @@ export interface Listing {
   eventStartAt: string;
   sellerId: string;
   title: string;
+  seatType: "GA" | "VIP" | "OTHER";
   priceCents: number;
   quantity: number;
   notes?: string;
@@ -25,8 +26,13 @@ interface ListingResponse {
 }
 
 export interface CreateListingInput {
-  eventId: string;
-  title: string;
+  eventId?: string;
+  eventTitle?: string;
+  eventArtist?: string;
+  eventCity?: string;
+  eventStartAt?: string;
+  title?: string;
+  seatType: "GA" | "VIP" | "OTHER";
   priceCents: number;
   quantity: number;
   notes?: string;
@@ -74,4 +80,44 @@ export function purchaseListing(
     token,
     body: JSON.stringify({ quantity })
   });
+}
+
+interface MarketEventSuggestion {
+  eventId: string;
+  title: string;
+  city: string;
+  startAt: string;
+  artists: string[];
+  activeListingCount: number;
+  currentPriceCents: number;
+}
+
+interface MarketEventsResponse {
+  events: MarketEventSuggestion[];
+}
+
+export async function listMarketEventSuggestions(input: {
+  query?: string;
+  artist?: string;
+  city?: string;
+  limit?: number;
+}): Promise<MarketEventSuggestion[]> {
+  const params = new URLSearchParams();
+  if (input.query?.trim()) {
+    params.set("q", input.query.trim());
+  }
+  if (input.artist?.trim()) {
+    params.set("artist", input.artist.trim());
+  }
+  if (input.city?.trim()) {
+    params.set("city", input.city.trim());
+  }
+  if (input.limit) {
+    params.set("limit", String(input.limit));
+  }
+
+  const response = await apiRequest<MarketEventsResponse>(
+    `/api/v1/listings/market?${params.toString()}`
+  );
+  return response.events;
 }

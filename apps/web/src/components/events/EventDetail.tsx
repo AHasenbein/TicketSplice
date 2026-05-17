@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Event } from "@/lib/api/events";
+import { addEventToWishlist } from "@/lib/api/auth";
 import type { Listing } from "@/lib/api/listings";
 import { getEvent } from "@/lib/api/events";
 import { ApiClientError } from "@/lib/api/client";
 import { listListings } from "@/lib/api/listings";
+import { readAuthToken } from "@/lib/auth/token-storage";
 import { ListingCard } from "../listings/ListingCard";
 import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -22,6 +25,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [listingsErrorMessage, setListingsErrorMessage] = useState("");
+  const [wishlistMessage, setWishlistMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +95,11 @@ export function EventDetail({ eventId }: EventDetailProps) {
     return <p className="muted-text text-sm">Event not found.</p>;
   }
 
+  const shouldShowVenue = Boolean(event.venue?.trim()) && event.venue.trim() !== "TBD";
+  const shouldShowDescription =
+    Boolean(event.description?.trim()) &&
+    event.description?.trim() !== "User-submitted event pending schedule confirmation.";
+
   return (
     <div className="grid gap-6">
       <nav className="flex items-center gap-2 text-sm">
@@ -112,14 +121,37 @@ export function EventDetail({ eventId }: EventDetailProps) {
           </p>
         ) : null}
         <p className="muted-text text-sm">
-          {event.venue} - {new Date(event.startAt).toLocaleString()}
+          {shouldShowVenue ? `${event.venue} - ` : ""}
+          {new Date(event.startAt).toLocaleString()}
         </p>
-        {event.description ? <p className="text-sm text-white/90">{event.description}</p> : null}
-        <div className="pt-2">
-          <ButtonLink href={`/listings/new?eventId=${encodeURIComponent(event.id)}`}>
-            Sell tickets for this event
-          </ButtonLink>
+        {shouldShowDescription ? (
+          <p className="text-sm text-white/90">{event.description}</p>
+        ) : null}
+        <div className="flex flex-wrap gap-2 pt-2">
+          <ButtonLink href="/listings/new">Sell tickets for this event</ButtonLink>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={async () => {
+              const token = readAuthToken();
+              if (!token) {
+                setWishlistMessage("Log in to save events to your wishlist.");
+                return;
+              }
+              try {
+                await addEventToWishlist(event.id, token);
+                setWishlistMessage("Added to wishlist.");
+              } catch (error) {
+                setWishlistMessage(
+                  error instanceof ApiClientError ? error.message : "Could not update wishlist."
+                );
+              }
+            }}
+          >
+            Add to wishlist
+          </Button>
         </div>
+        {wishlistMessage ? <Alert tone="info">{wishlistMessage}</Alert> : null}
       </SurfaceCard>
 
       <section className="grid gap-3">

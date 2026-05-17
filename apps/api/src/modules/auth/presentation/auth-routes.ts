@@ -1,6 +1,6 @@
 import { Router } from "express";
 import type { NextFunction, Request, Response } from "express";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { AuthService } from "../application/auth-service.js";
 import { OAuthProviderRegistry } from "../application/oauth-provider-registry.js";
 import { OAuthStateStore } from "../application/oauth-state-store.js";
@@ -12,6 +12,9 @@ import {
 } from "./auth-schemas.js";
 import { HttpError } from "../../../shared/http-error.js";
 import { env } from "../../../config/env.js";
+import type { EventService } from "../../events/application/event-service.js";
+import type { WishlistRepository } from "../../events/domain/wishlist-repository.js";
+import type { ListingService } from "../../listings/application/listing-service.js";
 
 function extractBearerToken(authorizationHeader?: string): string {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -24,7 +27,10 @@ function extractBearerToken(authorizationHeader?: string): string {
 export function createAuthRoutes(
   authService: AuthService,
   oauthProviderRegistry: OAuthProviderRegistry,
-  oauthStateStore: OAuthStateStore
+  oauthStateStore: OAuthStateStore,
+  eventService: EventService,
+  listingService: ListingService,
+  wishlistRepository: WishlistRepository
 ): Router {
   const router = Router();
 
@@ -62,10 +68,63 @@ export function createAuthRoutes(
     }
   });
 
+  router.get("/account/overview", async (req, res, next) => {
+    try {
+      const token = extractBearerToken(req.headers.authorization);
+      const user = await authService.getCurrentUser(token);
+      const [sellingListings, boughtEvents, wishlistedEventIds] = await Promise.all([
+        listingService.listListings({ sellerId: user.id, includeSoldOut: true }),
+        listingService.listBoughtEvents(user.id),
+        wishlistRepository.listEventIdsByUserId(user.id)
+      ]);
+      const wishlistedEvents = await Promise.all(
+        wishlistedEventIds.map(async (eventId) => eventService.getEventById(eventId).catch(() => null))
+      );
+
+      res.status(200).json({
+        sellingEvents: sellingListings.map((listing) => ({
+          eventId: listing.eventId,
+          eventTitle: listing.eventTitle,
+          city: listing.eventCity,
+          active: !listing.soldOut,
+          listingId: listing.id
+        })),
+        boughtEvents,
+        wishlistedEvents: wishlistedEvents.filter(Boolean)
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/account/wishlist", async (req, res, next) => {
+    try {
+      const token = extractBearerToken(req.headers.authorization);
+      const user = await authService.getCurrentUser(token);
+      const schema = z.object({ eventId: z.string().min(1) });
+      const input = schema.parse(req.body);
+      await eventService.getEventById(input.eventId);
+      await wishlistRepository.add(user.id, input.eventId);
+      res.status(201).json({ message: "Added to wishlist." });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete("/account/wishlist/:eventId", async (req, res, next) => {
+    try {
+      const token = extractBearerToken(req.headers.authorization);
+      const user = await authService.getCurrentUser(token);
+      await wishlistRepository.remove(user.id, req.params.eventId);
+      res.status(200).json({ message: "Removed from wishlist." });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get("/oauth/providers", (_req, res) => {
     res.status(200).json({
-      providers: oauthProviderRegistry.listProviderSummaries(),
-      message: "OAuth providers are planned but not configured yet."
+      providers: oauthProviderRegistry.listProviderSummaries()
     });
   });
 

@@ -36,7 +36,6 @@ export function AuthCard({ mode }: AuthCardProps) {
   const [enabledOAuthProviders, setEnabledOAuthProviders] = useState<
     Array<"google" | "apple">
   >([]);
-  const [oauthMessage, setOauthMessage] = useState("");
 
   const isRegisterMode = mode === "register";
   const hasMinLength = password.length >= 6;
@@ -51,11 +50,9 @@ export function AuthCard({ mode }: AuthCardProps) {
           .filter((provider) => provider.enabled)
           .map((provider) => provider.id);
         setEnabledOAuthProviders(enabled);
-        setOauthMessage(response.message ?? "");
       })
       .catch(() => {
         setEnabledOAuthProviders([]);
-        setOauthMessage("Could not check OAuth providers. Use email sign in for now.");
       })
       .finally(() => {
         setIsLoadingProviders(false);
@@ -160,7 +157,6 @@ export function AuthCard({ mode }: AuthCardProps) {
             Google sign-in is currently unavailable.
           </p>
         ) : null}
-        {oauthMessage ? <Alert tone="info">{oauthMessage}</Alert> : null}
       </div>
 
       <div className="my-6 flex items-center gap-3">

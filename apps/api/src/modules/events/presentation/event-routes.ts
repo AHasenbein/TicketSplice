@@ -4,6 +4,8 @@ import { ZodError, z } from "zod";
 import { HttpError } from "../../../shared/http-error.js";
 import { AuthService } from "../../auth/application/auth-service.js";
 import { EventService } from "../application/event-service.js";
+import { ListingService } from "../../listings/application/listing-service.js";
+import { getMongoDb } from "../../../database/mongo.js";
 
 const createEventSchema = z.object({
   title: z.string().trim().min(2).max(120),
@@ -22,7 +24,16 @@ function extractBearerToken(authorizationHeader?: string): string {
   return authorizationHeader.substring("Bearer ".length);
 }
 
-export function createEventRoutes(eventService: EventService, authService: AuthService): Router {
+function isLocalhostRequest(req: Request): boolean {
+  const host = req.hostname.toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+}
+
+export function createEventRoutes(
+  eventService: EventService,
+  authService: AuthService,
+  listingService: ListingService
+): Router {
   const router = Router();
 
   router.get("/artists", async (req, res, next) => {
@@ -42,21 +53,19 @@ export function createEventRoutes(eventService: EventService, authService: AuthS
   router.get("/", async (req, res, next) => {
     try {
       const query = typeof req.query.q === "string" ? req.query.q : undefined;
-      const artist = typeof req.query.artist === "string" ? req.query.artist : undefined;
       const city = typeof req.query.city === "string" ? req.query.city : undefined;
       const limit =
         typeof req.query.limit === "string" && Number.isFinite(Number(req.query.limit))
           ? Number(req.query.limit)
           : undefined;
-
-      await eventService.syncCurrentHouseEvents();
+      const activeListings = await listingService.listListings({});
+      const activeEventIds = Array.from(new Set(activeListings.map((listing) => listing.eventId)));
       const events = await eventService.listEvents({
-        houseOnly: false,
         upcomingOnly: true,
         query,
-        artist,
         city,
-        limit
+        limit,
+        ids: activeEventIds
       });
       res.status(200).json({ events });
     } catch (error) {
@@ -66,7 +75,6 @@ export function createEventRoutes(eventService: EventService, authService: AuthS
 
   router.get("/:eventId", async (req, res, next) => {
     try {
-      await eventService.syncCurrentHouseEvents();
       const event = await eventService.getEventById(req.params.eventId);
       res.status(200).json({ event });
     } catch (error) {
@@ -90,6 +98,37 @@ export function createEventRoutes(eventService: EventService, authService: AuthS
         description: input.description
       });
       res.status(201).json({ event });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete("/admin/all", async (req, res, next) => {
+    try {
+      if (!isLocalhostRequest(req)) {
+        throw new HttpError(403, "This action is only available on localhost.");
+      }
+
+      const token = extractBearerToken(req.headers.authorization);
+      await authService.getCurrentUser(token);
+
+      const db = await getMongoDb();
+      const [eventsResult, listingsResult, purchasesResult, wishlistsResult] = await Promise.all([
+        db.collection("events").deleteMany({}),
+        db.collection("listings").deleteMany({}),
+        db.collection("purchases").deleteMany({}),
+        db.collection("wishlists").deleteMany({})
+      ]);
+
+      res.status(200).json({
+        message: "All events and related marketplace data were deleted.",
+        deleted: {
+          events: eventsResult.deletedCount,
+          listings: listingsResult.deletedCount,
+          purchases: purchasesResult.deletedCount,
+          wishlists: wishlistsResult.deletedCount
+        }
+      });
     } catch (error) {
       next(error);
     }

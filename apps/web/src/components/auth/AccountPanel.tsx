@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { AuthUser } from "@/lib/api/auth";
-import { getCurrentUser } from "@/lib/api/auth";
+import type { AccountOverview, AuthUser } from "@/lib/api/auth";
+import { getAccountOverview, getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
+import { deleteAllEventsLocal } from "@/lib/api/events";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
@@ -14,8 +15,19 @@ import { SurfaceCard } from "../ui/SurfaceCard";
 export function AccountPanel() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [overview, setOverview] = useState<AccountOverview | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  const [isDeletingAllEvents, setIsDeletingAllEvents] = useState(false);
+
+  useEffect(() => {
+    setIsLocalhost(
+      ["localhost", "127.0.0.1"].includes(window.location.hostname) ||
+        window.location.hostname === "::1"
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,9 +40,13 @@ export function AccountPanel() {
       }
 
       try {
-        const result = await getCurrentUser(token);
+        const [userResult, accountResult] = await Promise.all([
+          getCurrentUser(token),
+          getAccountOverview(token)
+        ]);
         if (!cancelled) {
-          setUser(result.user);
+          setUser(userResult.user);
+          setOverview(accountResult);
         }
       } catch (error) {
         if (!cancelled) {
@@ -54,6 +70,46 @@ export function AccountPanel() {
     };
   }, [router]);
 
+  async function handleDeleteAllEvents() {
+    const token = readAuthToken();
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "Delete ALL events, listings, purchases, and wishlist entries? This cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingAllEvents(true);
+    setErrorMessage("");
+    setAdminMessage("");
+    try {
+      const result = await deleteAllEventsLocal(token);
+      setOverview((current) =>
+        current
+          ? {
+              ...current,
+              wishlistedEvents: [],
+              boughtEvents: [],
+              sellingEvents: []
+            }
+          : current
+      );
+      setAdminMessage(result.message);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof ApiClientError ? error.message : "Could not delete events."
+      );
+    } finally {
+      setIsDeletingAllEvents(false);
+    }
+  }
+
   return (
     <SurfaceCard className="w-full max-w-2xl p-6 sm:p-8">
       <h1 className="brand-heading text-2xl font-semibold">Your account</h1>
@@ -68,6 +124,11 @@ export function AccountPanel() {
       {errorMessage ? (
         <Alert tone="error" className="mt-6" announce="assertive">
           {errorMessage}
+        </Alert>
+      ) : null}
+      {adminMessage ? (
+        <Alert tone="success" className="mt-6">
+          {adminMessage}
         </Alert>
       ) : null}
 
@@ -88,6 +149,72 @@ export function AccountPanel() {
         </dl>
       ) : null}
 
+      {overview ? (
+        <div className="mt-8 grid gap-6">
+          <section className="grid gap-2">
+            <h2 className="brand-heading text-lg font-semibold">Wishlisted events</h2>
+            {overview.wishlistedEvents.length ? (
+              <ul className="grid gap-2 text-sm">
+                {overview.wishlistedEvents.map((event) => (
+                  <li
+                    key={event.id}
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
+                  >
+                    <p>{event.title}</p>
+                    <p className="muted-text text-xs">{event.city}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted-text text-sm">No wishlisted events yet.</p>
+            )}
+          </section>
+
+          <section className="grid gap-2">
+            <h2 className="brand-heading text-lg font-semibold">Events bought</h2>
+            {overview.boughtEvents.length ? (
+              <ul className="grid gap-2 text-sm">
+                {overview.boughtEvents.map((event) => (
+                  <li
+                    key={event.eventId}
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
+                  >
+                    <p>{event.eventTitle}</p>
+                    <p className="muted-text text-xs">
+                      {event.city} - {event.totalTickets} ticket(s) - $
+                      {(event.totalSpentCents / 100).toFixed(2)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted-text text-sm">No purchases yet.</p>
+            )}
+          </section>
+
+          <section className="grid gap-2">
+            <h2 className="brand-heading text-lg font-semibold">Events selling</h2>
+            {overview.sellingEvents.length ? (
+              <ul className="grid gap-2 text-sm">
+                {overview.sellingEvents.map((event) => (
+                  <li
+                    key={event.listingId}
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
+                  >
+                    <p>{event.eventTitle}</p>
+                    <p className="muted-text text-xs">
+                      {event.city} - {event.active ? "Active listing" : "Sold out"}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted-text text-sm">No selling activity yet.</p>
+            )}
+          </section>
+        </div>
+      ) : null}
+
       <div className="mt-6 flex items-center gap-2">
         <Button
           variant="ghost"
@@ -104,6 +231,17 @@ export function AccountPanel() {
           Log in again
         </ButtonLink>
       </div>
+      {isLocalhost ? (
+        <div className="mt-4">
+          <Button
+            variant="danger"
+            disabled={isDeletingAllEvents}
+            onClick={handleDeleteAllEvents}
+          >
+            {isDeletingAllEvents ? "Deleting..." : "Delete all events (localhost only)"}
+          </Button>
+        </div>
+      ) : null}
     </SurfaceCard>
   );
 }

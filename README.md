@@ -9,6 +9,7 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 2. Set env file for API:
    - `cp apps/api/.env.example apps/api/.env`
    - set a strong `JWT_SECRET`
+   - set `MONGODB_URI` and `MONGODB_DB_NAME`
 3. Run API:
    - `npm run dev:api`
 4. Run web app:
@@ -18,7 +19,7 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 
 - Run API linting:
   - `npm run -w @ticket-splice/api lint`
-- Run auth smoke test (register + verify email + login + me):
+- Run API smoke tests (auth + listings/events/account):
   - `JWT_SECRET=your_long_local_secret npm run -w @ticket-splice/api test`
 - Run web lint/build:
   - `npm run -w web lint`
@@ -27,6 +28,19 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 ## Frontend API configuration
 
 - Set `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` if your API is not at `http://localhost:4000`.
+
+## Production environment checklist
+
+- API required env:
+  - `NODE_ENV=production`
+  - `API_PORT`
+  - `JWT_SECRET`
+  - `APP_WEB_URL`
+  - `CORS_ORIGIN`
+  - `MONGODB_URI`
+  - `MONGODB_DB_NAME`
+- Web required env:
+  - `NEXT_PUBLIC_API_URL`
 
 ## Auth configuration
 
@@ -39,7 +53,7 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 
 ## Current status
 
-- Modular TypeScript Express API bootstrapped in `apps/api`.
-- Account system supports password confirmation, password policy checks, email verification links, and login session checks.
-- OAuth login is wired and can be enabled with Google credentials.
-- API expansion blueprint is documented in `docs/api-blueprint.md`.
+- Mongo-backed API with users, events, listings, purchases, and wishlists.
+- Browse events only returns events with active listings.
+- Simplified listing-first sell flow supports event create/reuse, market floor pricing, and seat types (`GA`, `VIP`, `OTHER`).
+- Account page is data-backed with wishlisted, bought, and selling sections.

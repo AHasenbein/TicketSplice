@@ -82,6 +82,7 @@ export function MyListings() {
             <p className="muted-text text-sm">
               ${(listing.priceCents / 100).toFixed(2)} x {listing.quantity} remaining
             </p>
+            <p className="muted-text text-sm">Seat type: {listing.seatType}</p>
             <p className="muted-text text-sm">
               {listing.eventTitle} - {listing.eventCity} -{" "}
               {new Date(listing.eventStartAt).toLocaleDateString()}
