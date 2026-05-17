@@ -49,7 +49,6 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
   - Without SMTP, verification links are logged to the API console in development.
 - Google OAuth (optional):
   - Configure `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI`.
-  - Set redirect URI to `http://localhost:4000/api/v1/auth/oauth/google/callback` for local dev.
 
 ## Current status
 

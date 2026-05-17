@@ -19,15 +19,11 @@ export function AccountPanel() {
   const [errorMessage, setErrorMessage] = useState("");
   const [adminMessage, setAdminMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isLocalhost, setIsLocalhost] = useState(false);
   const [isDeletingAllEvents, setIsDeletingAllEvents] = useState(false);
-
-  useEffect(() => {
-    setIsLocalhost(
-      ["localhost", "127.0.0.1"].includes(window.location.hostname) ||
-        window.location.hostname === "::1"
-    );
-  }, []);
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (["localhost", "127.0.0.1"].includes(window.location.hostname) ||
+      window.location.hostname === "::1");
 
   useEffect(() => {
     let cancelled = false;

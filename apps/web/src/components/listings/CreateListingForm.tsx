@@ -55,7 +55,6 @@ export function CreateListingForm() {
       currentPriceCents: number;
     }>
   >([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [priceError, setPriceError] = useState("");
@@ -86,14 +85,12 @@ export function CreateListingForm() {
     let cancelled = false;
     async function loadEventSuggestions() {
       if (!debouncedEventTitle) {
-        setIsLoadingEvents(false);
         setEventSuggestions([]);
         setMarketPriceCents(null);
         setEventId(undefined);
         return;
       }
 
-      setIsLoadingEvents(true);
       try {
         const response = await listMarketEventSuggestions({
           query: debouncedEventTitle,
@@ -123,10 +120,6 @@ export function CreateListingForm() {
           setErrorMessage(
             error instanceof ApiClientError ? error.message : "Could not load events for listing."
           );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingEvents(false);
         }
       }
     }

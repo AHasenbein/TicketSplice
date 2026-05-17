@@ -148,7 +148,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
               }
             }}
           >
-            Add to wishlist
+            ☆ Wishlist
           </Button>
         </div>
         {wishlistMessage ? <Alert tone="info">{wishlistMessage}</Alert> : null}
