@@ -28,11 +28,6 @@ function extractBearerToken(authorizationHeader?: string): string {
   return authorizationHeader.substring("Bearer ".length);
 }
 
-function isLocalhostRequest(req: Request): boolean {
-  const host = req.hostname.toLowerCase();
-  return host === "localhost" || host === "127.0.0.1" || host === "::1";
-}
-
 export function createEventRoutes(
   eventService: EventService,
   authService: AuthService,
@@ -110,10 +105,6 @@ export function createEventRoutes(
 
   router.delete("/admin/all", async (req, res, next) => {
     try {
-      if (!isLocalhostRequest(req)) {
-        throw new HttpError(403, "This action is only available on localhost.");
-      }
-
       const token = extractBearerToken(req.headers.authorization);
       const user = await authService.getCurrentUser(token);
       assertPrimaryTrustedSeller(user.email);

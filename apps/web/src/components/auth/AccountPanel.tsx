@@ -20,10 +20,6 @@ export function AccountPanel() {
   const [adminMessage, setAdminMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isDeletingAllEvents, setIsDeletingAllEvents] = useState(false);
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (["localhost", "127.0.0.1"].includes(window.location.hostname) ||
-      window.location.hostname === "::1");
 
   useEffect(() => {
     let cancelled = false;
@@ -251,14 +247,14 @@ export function AccountPanel() {
           Log in again
         </ButtonLink>
       </div>
-      {isLocalhost && user?.isPrimaryTrustedSeller ? (
+      {user?.isPrimaryTrustedSeller ? (
         <div className="mt-4">
           <Button
             variant="danger"
             disabled={isDeletingAllEvents}
             onClick={handleDeleteAllEvents}
           >
-            {isDeletingAllEvents ? "Deleting..." : "Delete all events (localhost only)"}
+            {isDeletingAllEvents ? "Deleting..." : "Delete all events"}
           </Button>
         </div>
       ) : null}
