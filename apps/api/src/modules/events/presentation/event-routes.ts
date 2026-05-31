@@ -6,7 +6,10 @@ import { AuthService } from "../../auth/application/auth-service.js";
 import { EventService } from "../application/event-service.js";
 import { ListingService } from "../../listings/application/listing-service.js";
 import { getMongoDb } from "../../../database/mongo.js";
-import { assertTrustedSeller } from "../../../shared/trusted-seller.js";
+import {
+  assertPrimaryTrustedSeller,
+  assertTrustedSeller
+} from "../../../shared/trusted-seller.js";
 
 const createEventSchema = z.object({
   title: z.string().trim().min(2).max(120),
@@ -112,7 +115,8 @@ export function createEventRoutes(
       }
 
       const token = extractBearerToken(req.headers.authorization);
-      await authService.getCurrentUser(token);
+      const user = await authService.getCurrentUser(token);
+      assertPrimaryTrustedSeller(user.email);
 
       const db = await getMongoDb();
       const [eventsResult, listingsResult, purchasesResult, wishlistsResult, requestsResult] = await Promise.all([

@@ -7,6 +7,7 @@ export interface AuthUser {
   providers: string[];
   emailVerified: boolean;
   isTrustedSeller: boolean;
+  isPrimaryTrustedSeller: boolean;
   createdAt: string;
 }
 

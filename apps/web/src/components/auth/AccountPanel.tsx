@@ -251,7 +251,7 @@ export function AccountPanel() {
           Log in again
         </ButtonLink>
       </div>
-      {isLocalhost ? (
+      {isLocalhost && user?.isPrimaryTrustedSeller ? (
         <div className="mt-4">
           <Button
             variant="danger"

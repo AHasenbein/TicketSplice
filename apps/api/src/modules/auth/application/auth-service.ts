@@ -7,7 +7,10 @@ import { SessionService } from "./session-service.js";
 import { env } from "../../../config/env.js";
 import type { EmailSender } from "../domain/email-sender.js";
 import type { OAuthProviderId, OAuthIdentity } from "../domain/oauth-provider-adapter.js";
-import { isTrustedSeller } from "../../../shared/trusted-seller.js";
+import {
+  isPrimaryTrustedSeller,
+  isTrustedSeller
+} from "../../../shared/trusted-seller.js";
 
 export interface RegisterInput {
   email: string;
@@ -38,6 +41,7 @@ export interface UserResponse {
   providers: string[];
   emailVerified: boolean;
   isTrustedSeller: boolean;
+  isPrimaryTrustedSeller: boolean;
   createdAt: string;
 }
 
@@ -238,6 +242,7 @@ export class AuthService {
       providers: user.providers.map((provider) => provider.provider),
       emailVerified: user.emailVerified,
       isTrustedSeller: isTrustedSeller(user.email),
+      isPrimaryTrustedSeller: isPrimaryTrustedSeller(user.email),
       createdAt: user.createdAt.toISOString()
     };
   }
