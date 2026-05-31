@@ -7,7 +7,7 @@ interface ListingDetailPageProps {
 
 export const metadata: Metadata = {
   title: "Listing Details | Ticket Splice",
-  description: "Review listing details and complete your ticket purchase."
+  description: "Review listing details and send your ticket request to the seller."
 };
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {

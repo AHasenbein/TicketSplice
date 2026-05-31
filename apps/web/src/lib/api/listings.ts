@@ -39,9 +39,11 @@ export interface CreateListingInput {
 }
 
 export interface PurchaseResult {
-  listing: Listing;
-  purchasedQuantity: number;
-  totalPriceCents: number;
+  requestId: string;
+  listingId: string;
+  requestedQuantity: number;
+  buyerPhone: string;
+  status: "pending" | "contacted" | "cancelled";
   message: string;
 }
 
@@ -73,12 +75,13 @@ export async function createListing(input: CreateListingInput, token: string): P
 export function purchaseListing(
   listingId: string,
   quantity: number,
+  phone: string,
   token: string
 ): Promise<PurchaseResult> {
   return apiRequest<PurchaseResult>(`/api/v1/listings/${listingId}/purchase`, {
     method: "POST",
     token,
-    body: JSON.stringify({ quantity })
+    body: JSON.stringify({ quantity, phone })
   });
 }
 

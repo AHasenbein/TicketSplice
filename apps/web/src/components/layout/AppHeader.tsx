@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getCurrentUser } from "@/lib/api/auth";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
 import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
@@ -16,11 +17,12 @@ export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const authedPrimaryItems: NavItem[] = [
-    { href: "/events", label: "Events" },
-    { href: "/listings/new", label: "Sell tickets" },
-    { href: "/dashboard", label: "Dashboard" }
-  ];
+  const [canSell, setCanSell] = useState(false);
+  const authedPrimaryItems: NavItem[] = [{ href: "/events", label: "Events" }];
+  if (canSell) {
+    authedPrimaryItems.push({ href: "/listings/new", label: "Sell tickets" });
+  }
+  authedPrimaryItems.push({ href: "/dashboard", label: "Dashboard" });
   const authedSecondaryItems: NavItem[] = [
     { href: "/listings/mine", label: "My listings" },
     { href: "/account", label: "Account" }
@@ -28,7 +30,15 @@ export function AppHeader() {
 
   useEffect(() => {
     const syncAuthState = () => {
-      setIsAuthenticated(Boolean(readAuthToken()));
+      const token = readAuthToken();
+      setIsAuthenticated(Boolean(token));
+      if (!token) {
+        setCanSell(false);
+        return;
+      }
+      void getCurrentUser(token)
+        .then((response) => setCanSell(response.user.isTrustedSeller))
+        .catch(() => setCanSell(false));
     };
 
     syncAuthState();
@@ -100,6 +110,7 @@ export function AppHeader() {
                 onClick={() => {
                   clearAuthToken();
                   setIsAuthenticated(false);
+                  setCanSell(false);
                   router.push("/auth/login");
                 }}
               >

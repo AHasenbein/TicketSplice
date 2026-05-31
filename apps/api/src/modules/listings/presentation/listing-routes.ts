@@ -4,6 +4,7 @@ import { ZodError, z } from "zod";
 import { HttpError } from "../../../shared/http-error.js";
 import { AuthService } from "../../auth/application/auth-service.js";
 import { ListingService } from "../application/listing-service.js";
+import { assertTrustedSeller } from "../../../shared/trusted-seller.js";
 
 const createListingSchema = z.object({
   eventId: z.string().min(1).optional(),
@@ -27,7 +28,8 @@ const createListingSchema = z.object({
 });
 
 const purchaseSchema = z.object({
-  quantity: z.number().int().min(1).max(10)
+  quantity: z.number().int().min(1).max(10),
+  phone: z.string().trim().min(7).max(24)
 });
 
 function extractBearerToken(authorizationHeader?: string): string {
@@ -100,6 +102,7 @@ export function createListingRoutes(
     try {
       const token = extractBearerToken(req.headers.authorization);
       const user = await authService.getCurrentUser(token);
+      assertTrustedSeller(user.email);
       const input = createListingSchema.parse(req.body);
       const listing = await listingService.createListing({
         sellerId: user.id,
@@ -128,7 +131,8 @@ export function createListingRoutes(
       const result = await listingService.purchaseListing({
         listingId: req.params.listingId,
         buyerId: user.id,
-        quantity: input.quantity
+        quantity: input.quantity,
+        buyerPhone: input.phone
       });
       res.status(200).json(result);
     } catch (error) {

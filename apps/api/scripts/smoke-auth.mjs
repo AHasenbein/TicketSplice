@@ -8,7 +8,7 @@ const server = app.listen(0, async () => {
   const baseUrl = `http://127.0.0.1:${port}`;
 
   try {
-    const email = "smoke-test@example.com";
+    const email = `smoke-test-${Date.now()}@example.com`;
     const password = "password123";
 
     const registerResponse = await fetch(`${baseUrl}/api/v1/auth/register`, {

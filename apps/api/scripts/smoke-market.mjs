@@ -101,7 +101,7 @@ const server = app.listen(0, async () => {
         "content-type": "application/json",
         authorization: `Bearer ${buyerToken}`
       },
-      body: JSON.stringify({ quantity: 1 })
+      body: JSON.stringify({ quantity: 1, phone: "+15551234567" })
     });
     if (!purchaseResponse.ok) {
       throw new Error(`Purchase failed with status ${purchaseResponse.status}.`);
@@ -128,7 +128,7 @@ const server = app.listen(0, async () => {
       throw new Error(`Account overview failed with status ${accountOverviewResponse.status}.`);
     }
     const accountBody = await accountOverviewResponse.json();
-    if (!accountBody.boughtEvents.length || !accountBody.wishlistedEvents.length) {
+    if (!accountBody.ticketRequestsSent?.length || !accountBody.wishlistedEvents.length) {
       throw new Error("Account sections were not populated after purchase/wishlist flow.");
     }
 

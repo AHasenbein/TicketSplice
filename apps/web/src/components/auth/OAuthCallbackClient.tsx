@@ -13,6 +13,7 @@ export function OAuthCallbackClient() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const error = searchParams.get("error");
+  const returnTo = searchParams.get("returnTo");
   const [isRedirectSlow, setIsRedirectSlow] = useState(false);
 
   useEffect(() => {
@@ -21,13 +22,13 @@ export function OAuthCallbackClient() {
       const timeout = setTimeout(() => {
         setIsRedirectSlow(true);
       }, 2500);
-      router.replace("/dashboard");
+      router.replace(returnTo || "/dashboard");
       return () => {
         clearTimeout(timeout);
       };
     }
     return undefined;
-  }, [router, token]);
+  }, [returnTo, router, token]);
 
   return (
     <SurfaceCard className="w-full max-w-md p-6 sm:p-8">
@@ -37,8 +38,8 @@ export function OAuthCallbackClient() {
             Signing you in...
           </p>
           {isRedirectSlow ? (
-            <ButtonLink href="/dashboard" variant="secondary" className="h-9 px-3">
-              Continue to dashboard
+            <ButtonLink href={returnTo || "/dashboard"} variant="secondary" className="h-9 px-3">
+              Continue
             </ButtonLink>
           ) : null}
         </div>

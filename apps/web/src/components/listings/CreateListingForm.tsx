@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import type { AuthUser } from "@/lib/api/auth";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { createListing, listMarketEventSuggestions } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
@@ -32,6 +34,7 @@ function toIsoFromDateTimeLocal(value: string): string | null {
 
 export function CreateListingForm() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [eventId, setEventId] = useState<string | undefined>(undefined);
   const [eventTitle, setEventTitle] = useState("");
   const [eventArtist, setEventArtist] = useState("");
@@ -63,10 +66,28 @@ export function CreateListingForm() {
   const [eventDateTimeError, setEventDateTimeError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     const token = readAuthToken();
     if (!token) {
       router.replace("/auth/login");
+      return;
     }
+
+    void getCurrentUser(token)
+      .then((response) => {
+        if (!cancelled) {
+          setCurrentUser(response.user);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          router.replace("/auth/login");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   useEffect(() => {
@@ -137,6 +158,10 @@ export function CreateListingForm() {
       router.push("/auth/login");
       return;
     }
+    if (!currentUser?.isTrustedSeller) {
+      setErrorMessage("Your account is not approved to list tickets yet.");
+      return;
+    }
 
     if (!eventTitle.trim()) {
       setEventTitleError("Event title is required.");
@@ -205,6 +230,12 @@ export function CreateListingForm() {
           Type an event name, set seat type and price, then publish.
         </p>
       </header>
+      {currentUser && !currentUser.isTrustedSeller ? (
+        <Alert tone="info">
+          Selling is restricted to trusted accounts. Ask support to add your email to the trusted
+          seller allowlist.
+        </Alert>
+      ) : null}
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <div className="grid gap-3 sm:grid-cols-3">
           <Input
@@ -340,7 +371,7 @@ export function CreateListingForm() {
           </Alert>
         ) : null}
         <div className="flex flex-wrap gap-2 pt-1">
-          <Button disabled={isSubmitting} type="submit">
+          <Button disabled={isSubmitting || (currentUser ? !currentUser.isTrustedSeller : true)} type="submit">
             {isSubmitting ? "Publishing..." : "Publish listing"}
           </Button>
           <Button

@@ -20,6 +20,7 @@ import { ListingService } from "./modules/listings/application/listing-service.j
 import { createListingRoutes } from "./modules/listings/presentation/listing-routes.js";
 import { MongoPurchaseRepository } from "./modules/listings/infrastructure/mongo-purchase-repository.js";
 import { MongoWishlistRepository } from "./modules/events/infrastructure/mongo-wishlist-repository.js";
+import { MongoPurchaseRequestRepository } from "./modules/listings/infrastructure/mongo-purchase-request-repository.js";
 
 export function createApp() {
   const app = express();
@@ -40,7 +41,13 @@ export function createApp() {
   const eventService = new EventService(eventRepository);
   const listingRepository = new MongoListingRepository();
   const purchaseRepository = new MongoPurchaseRepository();
-  const listingService = new ListingService(listingRepository, eventService, purchaseRepository);
+  const purchaseRequestRepository = new MongoPurchaseRequestRepository();
+  const listingService = new ListingService(
+    listingRepository,
+    eventService,
+    purchaseRepository,
+    purchaseRequestRepository
+  );
   const wishlistRepository = new MongoWishlistRepository();
 
   app.use(helmet());

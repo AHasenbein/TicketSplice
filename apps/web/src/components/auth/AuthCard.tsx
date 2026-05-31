@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -24,6 +24,7 @@ interface AuthCardProps {
 
 export function AuthCard({ mode }: AuthCardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +43,7 @@ export function AuthCard({ mode }: AuthCardProps) {
   const hasNumber = /\d/.test(password);
   const passwordsMatch = password === confirmPassword;
   const googleEnabled = enabledOAuthProviders.includes("google");
+  const returnTo = searchParams.get("returnTo");
 
   useEffect(() => {
     getOAuthProviders()
@@ -90,7 +92,7 @@ export function AuthCard({ mode }: AuthCardProps) {
       } else {
         const result = await login({ email, password });
         saveAuthToken(result.token);
-        router.push("/dashboard");
+        router.push(returnTo || "/dashboard");
       }
     } catch (error) {
       if (error instanceof ApiClientError) {

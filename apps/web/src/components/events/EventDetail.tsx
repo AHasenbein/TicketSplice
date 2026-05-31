@@ -128,7 +128,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
           <p className="text-sm text-white/90">{event.description}</p>
         ) : null}
         <div className="flex flex-wrap gap-2 pt-2">
-          <ButtonLink href="/listings/new">Sell tickets for this event</ButtonLink>
+          <ButtonLink href="/listings/new">Trusted sellers: list this event</ButtonLink>
           <Button
             variant="secondary"
             type="button"

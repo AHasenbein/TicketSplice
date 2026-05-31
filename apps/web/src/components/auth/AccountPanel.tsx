@@ -75,7 +75,7 @@ export function AccountPanel() {
 
     if (
       !window.confirm(
-        "Delete ALL events, listings, purchases, and wishlist entries? This cannot be undone."
+        "Delete ALL events, listings, purchases, purchase requests, and wishlist entries? This cannot be undone."
       )
     ) {
       return;
@@ -142,6 +142,10 @@ export function AccountPanel() {
             <dt className="muted-text">Providers</dt>
             <dd>{user.providers.join(", ")}</dd>
           </div>
+          <div className="flex justify-between gap-4 border-b border-[var(--border)] py-2">
+            <dt className="muted-text">Seller access</dt>
+            <dd>{user.isTrustedSeller ? "Trusted seller" : "Not approved yet"}</dd>
+          </div>
         </dl>
       ) : null}
 
@@ -167,24 +171,23 @@ export function AccountPanel() {
           </section>
 
           <section className="grid gap-2">
-            <h2 className="brand-heading text-lg font-semibold">Events bought</h2>
-            {overview.boughtEvents.length ? (
+            <h2 className="brand-heading text-lg font-semibold">Ticket requests sent</h2>
+            {overview.ticketRequestsSent.length ? (
               <ul className="grid gap-2 text-sm">
-                {overview.boughtEvents.map((event) => (
+                {overview.ticketRequestsSent.map((request) => (
                   <li
-                    key={event.eventId}
+                    key={request.requestId}
                     className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
                   >
-                    <p>{event.eventTitle}</p>
+                    <p>{request.eventTitle}</p>
                     <p className="muted-text text-xs">
-                      {event.city} - {event.totalTickets} ticket(s) - $
-                      {(event.totalSpentCents / 100).toFixed(2)}
+                      {request.city} - {request.quantity} ticket(s) - {request.status}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="muted-text text-sm">No purchases yet.</p>
+              <p className="muted-text text-sm">No ticket requests sent yet.</p>
             )}
           </section>
 
@@ -206,6 +209,27 @@ export function AccountPanel() {
               </ul>
             ) : (
               <p className="muted-text text-sm">No selling activity yet.</p>
+            )}
+          </section>
+
+          <section className="grid gap-2">
+            <h2 className="brand-heading text-lg font-semibold">Incoming buyer requests</h2>
+            {overview.ticketRequestsIncoming.length ? (
+              <ul className="grid gap-2 text-sm">
+                {overview.ticketRequestsIncoming.map((request) => (
+                  <li
+                    key={request.requestId}
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
+                  >
+                    <p>{request.eventTitle}</p>
+                    <p className="muted-text text-xs">
+                      Qty {request.quantity} - Buyer phone: {request.buyerPhone} - {request.status}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted-text text-sm">No incoming requests yet.</p>
             )}
           </section>
         </div>

@@ -10,6 +10,7 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
    - `cp apps/api/.env.example apps/api/.env`
    - set a strong `JWT_SECRET`
    - set `MONGODB_URI` and `MONGODB_DB_NAME`
+   - set `TRUSTED_SELLER_EMAILS` to approved seller emails
 3. Run API:
    - `npm run dev:api`
 4. Run web app:
@@ -39,8 +40,10 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
   - `CORS_ORIGIN`
   - `MONGODB_URI`
   - `MONGODB_DB_NAME`
+  - `TRUSTED_SELLER_EMAILS`
 - Web required env:
   - `NEXT_PUBLIC_API_URL`
+  - Avoid adding backend secrets to Netlify web env vars.
 
 ## Auth configuration
 
@@ -52,7 +55,9 @@ Ticket Splice marketplace platform scaffold with modular API architecture.
 
 ## Current status
 
-- Mongo-backed API with users, events, listings, purchases, and wishlists.
+- Mongo-backed API with users, events, listings, purchase requests, purchases, and wishlists.
 - Browse events only returns events with active listings.
 - Simplified listing-first sell flow supports event create/reuse, market floor pricing, and seat types (`GA`, `VIP`, `OTHER`).
-- Account page is data-backed with wishlisted, bought, and selling sections.
+- Trusted seller allowlist controls who can create events/listings.
+- Buyer flow is trust-based: logged-in buyers submit quantity + phone request and sellers follow up directly.
+- Account page is data-backed with wishlisted, selling, sent requests, and incoming buyer requests.

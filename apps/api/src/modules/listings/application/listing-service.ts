@@ -4,6 +4,7 @@ import { EventService } from "../../events/application/event-service.js";
 import type { Listing } from "../domain/listing.js";
 import type { ListingRepository } from "../domain/listing-repository.js";
 import type { PurchaseRepository } from "../domain/purchase-repository.js";
+import type { PurchaseRequestRepository } from "../domain/purchase-request-repository.js";
 
 export interface CreateListingInput {
   eventId?: string;
@@ -37,9 +38,11 @@ export interface ListingResponse {
 }
 
 export interface PurchaseResult {
-  listing: ListingResponse;
-  totalPriceCents: number;
-  purchasedQuantity: number;
+  requestId: string;
+  listingId: string;
+  requestedQuantity: number;
+  buyerPhone: string;
+  status: "pending" | "contacted" | "cancelled";
   message: string;
 }
 
@@ -47,7 +50,8 @@ export class ListingService {
   constructor(
     private readonly listingRepository: ListingRepository,
     private readonly eventService: EventService,
-    private readonly purchaseRepository: PurchaseRepository
+    private readonly purchaseRepository: PurchaseRepository,
+    private readonly purchaseRequestRepository: PurchaseRequestRepository
   ) {}
 
   async createListing(input: CreateListingInput): Promise<ListingResponse> {
@@ -107,6 +111,7 @@ export class ListingService {
     listingId: string;
     buyerId: string;
     quantity: number;
+    buyerPhone: string;
   }): Promise<PurchaseResult> {
     const listing = await this.listingRepository.findById(input.listingId);
     if (!listing) {
@@ -121,30 +126,27 @@ export class ListingService {
       throw new HttpError(400, "Not enough tickets available.");
     }
 
-    const updatedListing: Listing = {
-      ...listing,
-      quantity: listing.quantity - input.quantity,
-      soldOut: listing.quantity - input.quantity === 0,
-      updatedAt: new Date()
-    };
-    const saved = await this.listingRepository.update(updatedListing);
-    await this.purchaseRepository.create({
-      id: crypto.randomUUID(),
-      listingId: saved.id,
-      eventId: saved.eventId,
+    const requestId = crypto.randomUUID();
+    await this.purchaseRequestRepository.create({
+      id: requestId,
+      listingId: listing.id,
+      eventId: listing.eventId,
       buyerId: input.buyerId,
-      sellerId: saved.sellerId,
+      sellerId: listing.sellerId,
       quantity: input.quantity,
-      pricePerTicketCents: saved.priceCents,
-      totalPriceCents: saved.priceCents * input.quantity,
-      createdAt: new Date()
+      buyerPhone: input.buyerPhone.trim(),
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     return {
-      listing: await this.toResponse(saved),
-      purchasedQuantity: input.quantity,
-      totalPriceCents: saved.priceCents * input.quantity,
-      message: "Purchase confirmed."
+      requestId,
+      listingId: listing.id,
+      requestedQuantity: input.quantity,
+      buyerPhone: input.buyerPhone.trim(),
+      status: "pending",
+      message: "Request sent. Seller will reach out to your phone shortly."
     };
   }
 
@@ -282,5 +284,69 @@ export class ListingService {
       totalSpentCents: value.totalSpentCents,
       totalTickets: value.totalTickets
     }));
+  }
+
+  async listPurchaseRequestsByBuyer(buyerId: string): Promise<
+    Array<{
+      requestId: string;
+      listingId: string;
+      eventId: string;
+      eventTitle: string;
+      city: string;
+      quantity: number;
+      buyerPhone: string;
+      status: "pending" | "contacted" | "cancelled";
+      createdAt: string;
+    }>
+  > {
+    const requests = await this.purchaseRequestRepository.listByBuyerId(buyerId);
+    return Promise.all(
+      requests.map(async (request) => {
+        const event = await this.eventService.getEventById(request.eventId);
+        return {
+          requestId: request.id,
+          listingId: request.listingId,
+          eventId: request.eventId,
+          eventTitle: event.title,
+          city: event.city,
+          quantity: request.quantity,
+          buyerPhone: request.buyerPhone,
+          status: request.status,
+          createdAt: request.createdAt.toISOString()
+        };
+      })
+    );
+  }
+
+  async listPurchaseRequestsBySeller(sellerId: string): Promise<
+    Array<{
+      requestId: string;
+      listingId: string;
+      eventId: string;
+      eventTitle: string;
+      buyerId: string;
+      quantity: number;
+      buyerPhone: string;
+      status: "pending" | "contacted" | "cancelled";
+      createdAt: string;
+    }>
+  > {
+    const requests = await this.purchaseRequestRepository.listBySellerId(sellerId);
+    return Promise.all(
+      requests.map(async (request) => {
+        const event = await this.eventService.getEventById(request.eventId);
+        return {
+          requestId: request.id,
+          listingId: request.listingId,
+          eventId: request.eventId,
+          eventTitle: event.title,
+          buyerId: request.buyerId,
+          quantity: request.quantity,
+          buyerPhone: request.buyerPhone,
+          status: request.status,
+          createdAt: request.createdAt.toISOString()
+        };
+      })
+    );
   }
 }

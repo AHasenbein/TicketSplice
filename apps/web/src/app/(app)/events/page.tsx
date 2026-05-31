@@ -19,7 +19,7 @@ export default function EventsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <ButtonLink href="/listings/new">Sell tickets</ButtonLink>
+          <ButtonLink href="/listings/new">Trusted sellers: list tickets</ButtonLink>
           <ButtonLink href="/listings/mine" variant="secondary">
             My listings
           </ButtonLink>

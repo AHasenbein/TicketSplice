@@ -74,16 +74,18 @@ export function DashboardPanel() {
               {user ? `Welcome, ${user.displayName}` : "Welcome"}
             </h1>
             <p className="muted-text mt-2 text-sm">
-              You are signed in and ready to browse events, post listings, and manage sales.
+              You are signed in and ready to browse events and manage your marketplace activity.
             </p>
           </div>
           <div className="flex gap-2">
             <ButtonLink href="/events" variant="secondary">
               Browse events
             </ButtonLink>
-            <ButtonLink href="/listings/new" variant="ghost">
-              Sell tickets
-            </ButtonLink>
+            {user?.isTrustedSeller ? (
+              <ButtonLink href="/listings/new" variant="ghost">
+                Sell tickets
+              </ButtonLink>
+            ) : null}
             <ButtonLink href="/account" variant="ghost">
               My account
             </ButtonLink>
@@ -111,11 +113,19 @@ export function DashboardPanel() {
         </SurfaceCard>
         <SurfaceCard className="p-5" elevated={false}>
           <p className="muted-text text-xs uppercase tracking-[0.16em]">Quick action</p>
-          <p className="brand-heading mt-3 text-base font-medium">List your next ticket</p>
-          <p className="muted-text mt-1 text-sm">Create a listing in under a minute.</p>
-          <ButtonLink href="/listings/new" variant="ghost" className="mt-3 h-9 px-3">
-            Create listing
-          </ButtonLink>
+          <p className="brand-heading mt-3 text-base font-medium">
+            {user?.isTrustedSeller ? "List your next ticket" : "Seller approval required"}
+          </p>
+          <p className="muted-text mt-1 text-sm">
+            {user?.isTrustedSeller
+              ? "Create a listing in under a minute."
+              : "Ask support to add your email to trusted seller accounts."}
+          </p>
+          {user?.isTrustedSeller ? (
+            <ButtonLink href="/listings/new" variant="ghost" className="mt-3 h-9 px-3">
+              Create listing
+            </ButtonLink>
+          ) : null}
         </SurfaceCard>
       </div>
 

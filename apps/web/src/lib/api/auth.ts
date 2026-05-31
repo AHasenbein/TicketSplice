@@ -6,6 +6,7 @@ export interface AuthUser {
   displayName: string;
   providers: string[];
   emailVerified: boolean;
+  isTrustedSeller: boolean;
   createdAt: string;
 }
 
@@ -38,6 +39,28 @@ export interface AccountOverview {
     city: string;
     active: boolean;
     listingId: string;
+  }>;
+  ticketRequestsSent: Array<{
+    requestId: string;
+    listingId: string;
+    eventId: string;
+    eventTitle: string;
+    city: string;
+    quantity: number;
+    buyerPhone: string;
+    status: "pending" | "contacted" | "cancelled";
+    createdAt: string;
+  }>;
+  ticketRequestsIncoming: Array<{
+    requestId: string;
+    listingId: string;
+    eventId: string;
+    eventTitle: string;
+    buyerId: string;
+    quantity: number;
+    buyerPhone: string;
+    status: "pending" | "contacted" | "cancelled";
+    createdAt: string;
   }>;
 }
 

@@ -72,9 +72,11 @@ export function createAuthRoutes(
     try {
       const token = extractBearerToken(req.headers.authorization);
       const user = await authService.getCurrentUser(token);
-      const [sellingListings, boughtEvents, wishlistedEventIds] = await Promise.all([
+      const [sellingListings, boughtEvents, sentRequests, incomingRequests, wishlistedEventIds] = await Promise.all([
         listingService.listListings({ sellerId: user.id, includeSoldOut: true }),
         listingService.listBoughtEvents(user.id),
+        listingService.listPurchaseRequestsByBuyer(user.id),
+        listingService.listPurchaseRequestsBySeller(user.id),
         wishlistRepository.listEventIdsByUserId(user.id)
       ]);
       const wishlistedEvents = await Promise.all(
@@ -90,6 +92,8 @@ export function createAuthRoutes(
           listingId: listing.id
         })),
         boughtEvents,
+        ticketRequestsSent: sentRequests,
+        ticketRequestsIncoming: incomingRequests,
         wishlistedEvents: wishlistedEvents.filter(Boolean)
       });
     } catch (error) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ApiClientError } from "@/lib/api/client";
 import { getListing, purchaseListing } from "@/lib/api/listings";
@@ -22,6 +22,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
   const router = useRouter();
   const [listing, setListing] = useState<Listing | null>(null);
   const [quantity, setQuantity] = useState("1");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -55,19 +56,11 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
     };
   }, [listingId]);
 
-  const total = useMemo(() => {
-    const parsedQuantity = Number(quantity);
-    if (!listing || !Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
-      return 0;
-    }
-    return (listing.priceCents * parsedQuantity) / 100;
-  }, [listing, quantity]);
-
   async function handlePurchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readAuthToken();
     if (!token) {
-      router.push("/auth/login");
+      router.push(`/auth/login?returnTo=${encodeURIComponent(`/listings/${listingId}`)}`);
       return;
     }
 
@@ -80,20 +73,19 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
       setErrorMessage("Enter a valid ticket quantity.");
       return;
     }
+    if (phone.trim().length < 7) {
+      setErrorMessage("Enter a valid phone number so the seller can contact you.");
+      return;
+    }
 
     setIsSubmitting(true);
     setErrorMessage("");
     setMessage("");
     try {
-      const result = await purchaseListing(listing.id, parsedQuantity, token);
-      setListing(result.listing);
-      setMessage(
-        `${result.message} You bought ${result.purchasedQuantity} ticket${
-          result.purchasedQuantity === 1 ? "" : "s"
-        }.`
-      );
+      const result = await purchaseListing(listing.id, parsedQuantity, phone.trim(), token);
+      setMessage(result.message);
     } catch (error) {
-      setErrorMessage(error instanceof ApiClientError ? error.message : "Purchase failed.");
+      setErrorMessage(error instanceof ApiClientError ? error.message : "Request failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +130,9 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
       <p className="muted-text text-sm">
         Event time: {new Date(listing.eventStartAt).toLocaleString()}
       </p>
-      <p className="text-sm text-white/90">${(listing.priceCents / 100).toFixed(2)} per ticket</p>
+      <p className="text-sm text-white/90">
+        ${(listing.priceCents / 100).toFixed(2)} per ticket (reference price)
+      </p>
       <p className="muted-text text-sm">Seat type: {listing.seatType}</p>
       <p className="muted-text text-sm">
         {listing.quantity} ticket{listing.quantity === 1 ? "" : "s"} available
@@ -147,7 +141,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
 
       <form className="grid gap-3" onSubmit={handlePurchase}>
         <Input
-          label="Tickets to buy"
+          label="Tickets requested"
           max={Math.max(1, listing.quantity)}
           min={1}
           onChange={(event) => setQuantity(event.target.value)}
@@ -155,9 +149,16 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
           type="number"
           value={quantity}
         />
-        <p className="muted-text text-sm">Total: ${total.toFixed(2)}</p>
+        <Input
+          label="Your phone number"
+          onChange={(event) => setPhone(event.target.value)}
+          placeholder="+1 555 555 5555"
+          required
+          type="tel"
+          value={phone}
+        />
         <Button disabled={isSubmitting || listing.soldOut || listing.quantity <= 0} type="submit">
-          {isSubmitting ? "Processing..." : "Buy tickets"}
+          {isSubmitting ? "Sending request..." : "Request tickets"}
         </Button>
       </form>
       {message ? <Alert tone="success">{message}</Alert> : null}

@@ -19,6 +19,7 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   MONGODB_DB_NAME: z.string().min(1).default("ticketsplice"),
+  TRUSTED_SELLER_EMAILS: z.string().default(""),
   EMAIL_FROM: z.email().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),

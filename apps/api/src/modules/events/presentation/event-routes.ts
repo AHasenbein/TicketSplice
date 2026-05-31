@@ -6,6 +6,7 @@ import { AuthService } from "../../auth/application/auth-service.js";
 import { EventService } from "../application/event-service.js";
 import { ListingService } from "../../listings/application/listing-service.js";
 import { getMongoDb } from "../../../database/mongo.js";
+import { assertTrustedSeller } from "../../../shared/trusted-seller.js";
 
 const createEventSchema = z.object({
   title: z.string().trim().min(2).max(120),
@@ -86,6 +87,7 @@ export function createEventRoutes(
     try {
       const token = extractBearerToken(req.headers.authorization);
       const user = await authService.getCurrentUser(token);
+      assertTrustedSeller(user.email);
       const input = createEventSchema.parse(req.body);
 
       const event = await eventService.createEvent({
@@ -113,11 +115,12 @@ export function createEventRoutes(
       await authService.getCurrentUser(token);
 
       const db = await getMongoDb();
-      const [eventsResult, listingsResult, purchasesResult, wishlistsResult] = await Promise.all([
+      const [eventsResult, listingsResult, purchasesResult, wishlistsResult, requestsResult] = await Promise.all([
         db.collection("events").deleteMany({}),
         db.collection("listings").deleteMany({}),
         db.collection("purchases").deleteMany({}),
-        db.collection("wishlists").deleteMany({})
+        db.collection("wishlists").deleteMany({}),
+        db.collection("purchase_requests").deleteMany({})
       ]);
 
       res.status(200).json({
@@ -126,7 +129,8 @@ export function createEventRoutes(
           events: eventsResult.deletedCount,
           listings: listingsResult.deletedCount,
           purchases: purchasesResult.deletedCount,
-          wishlists: wishlistsResult.deletedCount
+          wishlists: wishlistsResult.deletedCount,
+          purchaseRequests: requestsResult.deletedCount
         }
       });
     } catch (error) {
