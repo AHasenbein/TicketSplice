@@ -286,10 +286,10 @@ export function CreateListingForm() {
   }
 
   return (
-    <SurfaceCard className="grid max-w-3xl gap-6 p-6 sm:p-8">
+    <SurfaceCard className="grid max-w-3xl gap-6 p-5 sm:p-8">
       <header className="grid gap-2">
         <p className="muted-text text-xs uppercase tracking-[0.18em]">sell tickets</p>
-        <h1 className="brand-heading text-3xl font-semibold">List tickets</h1>
+        <h1 className="brand-heading text-2xl font-semibold sm:text-3xl">List tickets</h1>
         <p className="muted-text text-sm">
           Type an event name, set seat type and price, then publish.
         </p>

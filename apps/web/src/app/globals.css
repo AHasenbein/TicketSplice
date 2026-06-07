@@ -36,17 +36,57 @@
   --font-heading: var(--font-space-grotesk);
 }
 
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   background-image:
     radial-gradient(circle at 12% -10%, rgba(255, 46, 168, 0.28), transparent 45%),
     radial-gradient(circle at 92% 8%, rgba(34, 211, 255, 0.22), transparent 42%),
     radial-gradient(circle at 50% 110%, rgba(255, 46, 168, 0.14), transparent 55%),
     linear-gradient(180deg, #07060f 0%, #0a0817 50%, #06050d 100%);
   background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 14px;
+  }
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
 }
 
 a {
@@ -60,14 +100,21 @@ a {
 }
 
 .page-shell {
-  width: min(1180px, 92vw);
+  width: min(1180px, 94vw);
   margin: 0 auto;
 }
 
 .section-shell {
-  width: min(1180px, 92vw);
+  width: min(1180px, 94vw);
   margin: 0 auto;
   padding-block: clamp(2rem, 4vw, 5rem);
+}
+
+@media (min-width: 640px) {
+  .page-shell,
+  .section-shell {
+    width: min(1180px, 92vw);
+  }
 }
 
 .surface-card {

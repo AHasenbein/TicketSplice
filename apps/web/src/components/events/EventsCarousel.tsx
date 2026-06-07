@@ -88,7 +88,7 @@ export function EventsCarousel({
             <span className="dot" />
             Featured tonight
           </span>
-          <h2 className="brand-heading mt-3 text-3xl font-semibold sm:text-4xl">{title}</h2>
+          <h2 className="brand-heading mt-3 text-2xl font-semibold sm:text-4xl">{title}</h2>
           <p className="muted-text mt-1 max-w-xl text-sm">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">

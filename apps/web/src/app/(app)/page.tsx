@@ -104,8 +104,8 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-y-0 right-0 z-[5] w-16 bg-[linear-gradient(270deg,rgba(7,6,15,0.95),transparent)]" />
       </div>
 
-      <div className="page-shell flex flex-1 flex-col gap-20 py-12 sm:py-16">
-        <section className="neon-sweep relative grid gap-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(150deg,rgba(24,18,48,0.7),rgba(10,8,22,0.85))] p-8 sm:p-12">
+      <div className="page-shell flex flex-1 flex-col gap-12 py-8 sm:gap-20 sm:py-16">
+        <section className="neon-sweep relative grid gap-6 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(150deg,rgba(24,18,48,0.7),rgba(10,8,22,0.85))] p-5 sm:gap-8 sm:p-12">
           <div className="float-slow pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full bg-[rgba(255,46,168,0.35)] blur-3xl" />
           <div className="float-slow-alt pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-[rgba(34,211,255,0.28)] blur-3xl" />
           <div className="relative grid gap-6">
@@ -116,12 +116,12 @@ export default function Home() {
               </span>
               <NextEventCountdown />
             </div>
-            <h1 className="fade-in-up delay-2 brand-heading max-w-3xl text-4xl font-semibold leading-[1.05] sm:text-6xl">
+            <h1 className="fade-in-up delay-2 brand-heading max-w-3xl text-[2.1rem] font-semibold leading-[1.05] sm:text-6xl">
               <span className="brand-gradient-text animated-gradient">Buy and sell</span>{" "}
               <span className="text-white">event tickets</span>{" "}
               <span className="silver-text">without the friction.</span>
             </h1>
-            <p className="fade-in-up delay-3 silver-text max-w-2xl text-base leading-relaxed sm:text-lg">
+            <p className="fade-in-up delay-3 silver-text max-w-2xl text-sm leading-relaxed sm:text-lg">
               Miami Tix is a zero fees music ticket marketplace for fans. Discover events, join our
               community, and get tickets in minutes — backed by trusted sellers, verified accounts,
               and made by people who actually go to events.
@@ -135,24 +135,24 @@ export default function Home() {
                 Trusted sellers: list tickets
               </ButtonLink>
             </div>
-            <dl className="fade-in-up delay-5 mt-4 grid max-w-2xl grid-cols-3 gap-6 border-t border-[var(--border)] pt-6">
+            <dl className="fade-in-up delay-5 mt-2 grid max-w-2xl grid-cols-3 gap-3 border-t border-[var(--border)] pt-5 sm:mt-4 sm:gap-6 sm:pt-6">
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-[var(--neon-blue-soft)]">
+                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-blue-soft)] sm:text-[10px] sm:tracking-[0.22em]">
                   Verified sellers
                 </dt>
-                <dd className="brand-heading mt-2 text-2xl font-semibold text-white">100%</dd>
+                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">100%</dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-[var(--neon-pink-soft)]">
+                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-pink-soft)] sm:text-[10px] sm:tracking-[0.22em]">
                   Median list time
                 </dt>
-                <dd className="brand-heading mt-2 text-2xl font-semibold text-white">42 s</dd>
+                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">42 s</dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-[var(--silver)]">
+                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--silver)] sm:text-[10px] sm:tracking-[0.22em]">
                   Cities live
                 </dt>
-                <dd className="brand-heading mt-2 text-2xl font-semibold text-white">24+</dd>
+                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">24+</dd>
               </div>
             </dl>
           </div>
@@ -174,14 +174,14 @@ export default function Home() {
 
       <EventsCarousel />
 
-      <section className="grid gap-6">
+      <section className="grid gap-4 sm:gap-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <span className="brand-pill">
               <span className="dot" />
               How it works
             </span>
-            <h2 className="brand-heading mt-3 text-3xl font-semibold sm:text-4xl">
+            <h2 className="brand-heading mt-3 text-2xl font-semibold sm:text-4xl">
               Three steps to your next night out
             </h2>
           </div>
@@ -189,9 +189,9 @@ export default function Home() {
             Start exploring
           </ButtonLink>
         </header>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
           {howSteps.map((entry, index) => (
-            <SurfaceCard key={entry.step} className="relative overflow-hidden p-6" elevated={false}>
+            <SurfaceCard key={entry.step} className="relative overflow-hidden p-5 sm:p-6" elevated={false}>
               <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(255,46,168,0.22),transparent_70%)]" />
               <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--neon-blue-soft)]">
                 {entry.step}
@@ -208,21 +208,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid gap-6">
+      <section className="grid gap-4 sm:gap-6">
         <header>
           <span className="brand-pill">
             <span className="dot" />
             Built for trust
           </span>
-          <h2 className="brand-heading mt-3 text-3xl font-semibold sm:text-4xl">
+          <h2 className="brand-heading mt-3 text-2xl font-semibold sm:text-4xl">
             Why Miami Tix feels alive
           </h2>
         </header>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
           {featureCards.map((card) => (
             <SurfaceCard
               key={card.title}
-              className={`relative overflow-hidden p-6 transition hover:-translate-y-0.5 ${
+              className={`relative overflow-hidden p-5 transition hover:-translate-y-0.5 sm:p-6 ${
                 card.accent === "pink"
                   ? "hover:border-[rgba(255,46,168,0.55)] hover:shadow-[0_18px_46px_rgba(255,46,168,0.25)]"
                   : "hover:border-[rgba(34,211,255,0.55)] hover:shadow-[0_18px_46px_rgba(34,211,255,0.25)]"
@@ -250,16 +250,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(120deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18))] p-8 sm:p-12">
+      <section className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(120deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18))] p-6 sm:p-12">
         <div className="pointer-events-none absolute -top-24 right-12 h-64 w-64 rounded-full bg-[rgba(255,46,168,0.35)] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 left-12 h-64 w-64 rounded-full bg-[rgba(34,211,255,0.35)] blur-3xl" />
-        <div className="relative grid items-center gap-6 md:grid-cols-[1fr_auto]">
+        <div className="relative grid items-center gap-5 md:grid-cols-[1fr_auto]">
           <div>
             <span className="brand-pill">
               <span className="dot" />
               Ready when you are
             </span>
-            <h2 className="brand-heading mt-3 text-3xl font-semibold text-white sm:text-4xl">
+            <h2 className="brand-heading mt-3 text-2xl font-semibold text-white sm:text-4xl">
               Plug in. Tune in. <span className="brand-gradient-text">Vibe out.</span>
             </h2>
             <p className="silver-text mt-2 max-w-xl text-sm sm:text-base">

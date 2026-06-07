@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AccountPage() {
   return (
-    <section className="page-shell flex flex-1 items-center justify-center py-14">
+    <section className="page-shell flex flex-1 items-start justify-center py-8 sm:py-14">
       <AccountPanel />
     </section>
   );

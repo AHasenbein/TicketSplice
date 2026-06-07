@@ -66,18 +66,18 @@ export function DashboardPanel() {
 
   return (
     <div className="grid w-full max-w-4xl gap-5">
-      <SurfaceCard className="grid gap-5 p-6 sm:p-8">
+      <SurfaceCard className="grid gap-5 p-5 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="muted-text text-xs uppercase tracking-[0.18em]">dashboard</p>
-            <h1 className="brand-heading mt-2 text-3xl font-semibold">
+            <h1 className="brand-heading mt-2 break-words text-2xl font-semibold sm:text-3xl">
               {user ? `Welcome, ${user.displayName}` : "Welcome"}
             </h1>
             <p className="muted-text mt-2 text-sm">
               You are signed in and ready to browse events and manage your marketplace activity.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <ButtonLink href="/events" variant="secondary">
               Browse events
             </ButtonLink>

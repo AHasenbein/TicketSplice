@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCurrentUser } from "@/lib/api/auth";
 import { clearAuthToken, readAuthToken } from "@/lib/auth/token-storage";
 import { Button } from "../ui/Button";
@@ -52,6 +52,13 @@ export function AppHeader() {
 
   const isAuthRoute = pathname.startsWith("/auth");
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    if (mobileMenuRef.current) {
+      mobileMenuRef.current.open = false;
+    }
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(7,6,15,0.78)] backdrop-blur-xl">
@@ -113,9 +120,16 @@ export function AppHeader() {
                   );
                 })}
               </div>
-              <details className="relative md:hidden">
-                <summary className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                  Menu
+              <details ref={mobileMenuRef} className="relative md:hidden">
+                <summary
+                  aria-label="Open menu"
+                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-pink)]"
+                >
+                  <span aria-hidden="true" className="grid h-3 w-4 grid-rows-3 gap-[3px]">
+                    <span className="h-px w-full rounded bg-current" />
+                    <span className="h-px w-full rounded bg-current" />
+                    <span className="h-px w-full rounded bg-current" />
+                  </span>
                 </summary>
                 <div className="absolute right-0 z-20 mt-2 grid min-w-48 gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
                   {[...authedPrimaryItems, ...authedSecondaryItems].map((item) => {

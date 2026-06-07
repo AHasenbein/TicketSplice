@@ -254,7 +254,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
   const canDeleteListing = currentUserId === listing.sellerId;
 
   return (
-    <SurfaceCard className="grid max-w-xl gap-4 p-6 sm:p-8">
+    <SurfaceCard className="grid max-w-xl gap-4 p-5 sm:p-8">
       <nav className="flex items-center gap-2 text-sm">
         <Link href="/listings/mine" className="muted-text underline underline-offset-4">
           My listings

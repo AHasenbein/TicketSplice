@@ -65,8 +65,8 @@ export function MyListings() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-between gap-3">
-        <h1 className="brand-heading text-3xl font-semibold">My listings</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="brand-heading text-2xl font-semibold sm:text-3xl">My listings</h1>
         <ButtonLink href="/listings/new">Create listing</ButtonLink>
       </div>
       {listings.length ? (

@@ -103,7 +103,7 @@ export function AccountPanel() {
   }
 
   return (
-    <SurfaceCard className="w-full max-w-2xl p-6 sm:p-8">
+    <SurfaceCard className="w-full max-w-2xl p-5 sm:p-8">
       <h1 className="brand-heading text-2xl font-semibold">Your account</h1>
       <p className="muted-text mt-2 text-sm">Session check from the live API.</p>
 

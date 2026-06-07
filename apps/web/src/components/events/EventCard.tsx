@@ -28,7 +28,7 @@ export function EventCard({
       {onToggleWishlist ? (
         <button
           type="button"
-          className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-base transition hover:bg-white/10 disabled:opacity-60"
+          className="absolute right-2.5 top-2.5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-base transition hover:bg-white/10 disabled:opacity-60"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(eventClick) => {
             eventClick.preventDefault();
