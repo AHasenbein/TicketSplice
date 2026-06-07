@@ -20,7 +20,19 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   MONGODB_DB_NAME: z.string().min(1).default("ticketsplice"),
   TRUSTED_SELLER_EMAILS: z.string().default(""),
-  EMAIL_FROM: z.email().optional(),
+  EMAIL_FROM: z
+    .string()
+    .trim()
+    .min(3)
+    .refine(
+      (value) => {
+        const displayNameMatch = /<([^>]+)>\s*$/.exec(value);
+        const emailCandidate = displayNameMatch ? displayNameMatch[1].trim() : value.trim();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailCandidate);
+      },
+      { message: "EMAIL_FROM must be an email or \"Name <email@domain>\" format." }
+    )
+    .optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
   SMTP_SECURE: z

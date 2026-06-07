@@ -96,7 +96,7 @@ export function EventsCarousel({
             type="button"
             aria-label="Scroll previous"
             onClick={() => scrollByCards(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(200,205,220,0.04)] text-[var(--silver)] transition hover:border-[rgba(34,211,255,0.55)] hover:bg-[rgba(34,211,255,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(34,211,255,0.45)]"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--silver)] transition hover:border-[rgba(34,211,255,0.55)] hover:bg-[rgba(34,211,255,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(34,211,255,0.45)]"
           >
             <span aria-hidden="true">‹</span>
           </button>
@@ -104,7 +104,7 @@ export function EventsCarousel({
             type="button"
             aria-label="Scroll next"
             onClick={() => scrollByCards(1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(200,205,220,0.04)] text-[var(--silver)] transition hover:border-[rgba(255,46,168,0.55)] hover:bg-[rgba(255,46,168,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(255,46,168,0.45)]"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--silver)] transition hover:border-[rgba(255,46,168,0.55)] hover:bg-[rgba(255,46,168,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(255,46,168,0.45)]"
           >
             <span aria-hidden="true">›</span>
           </button>
@@ -116,7 +116,7 @@ export function EventsCarousel({
           {Array.from({ length: 4 }).map((_unused, index) => (
             <div
               key={index}
-              className="h-72 w-[260px] shrink-0 animate-pulse rounded-[var(--radius-lg)] border border-[var(--border)] bg-[rgba(200,205,220,0.04)]"
+              className="h-72 w-[260px] shrink-0 animate-pulse rounded-[var(--radius-lg)] border border-[var(--border)] bg-[rgba(232,235,243,0.06)]"
             />
           ))}
         </div>

@@ -1,6 +1,7 @@
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
 import { EventsCarousel } from "@/components/events/EventsCarousel";
+import { NextEventCountdown } from "@/components/events/NextEventCountdown";
 
 const featureCards = [
   {
@@ -113,15 +114,7 @@ export default function Home() {
                 <span className="dot" />
                 Live · House music marketplace
               </span>
-              <span className="brand-pill w-fit !text-white">
-                <span aria-hidden="true" className="flex items-end gap-[3px]">
-                  <span className="eq-bar" />
-                  <span className="eq-bar" />
-                  <span className="eq-bar" />
-                  <span className="eq-bar" />
-                </span>
-                Now playing
-              </span>
+              <NextEventCountdown />
             </div>
             <h1 className="fade-in-up delay-2 brand-heading max-w-3xl text-4xl font-semibold leading-[1.05] sm:text-6xl">
               <span className="brand-gradient-text animated-gradient">Buy and sell</span>{" "}
@@ -167,7 +160,7 @@ export default function Home() {
 
         <section
           aria-hidden="true"
-          className="relative overflow-hidden rounded-full border border-[var(--border)] bg-[rgba(200,205,220,0.04)] py-3"
+          className="relative overflow-hidden rounded-full border border-[var(--border)] bg-[rgba(232,235,243,0.06)] py-3"
         >
           <div className="marquee-track flex w-max gap-10 whitespace-nowrap px-6 text-xs uppercase tracking-[0.32em] text-[var(--silver)]">
             {[...tickerItems, ...tickerItems].map((item, index) => (
@@ -207,7 +200,7 @@ export default function Home() {
                 {entry.title}
               </h3>
               <p className="muted-text mt-2 text-sm leading-6">{entry.description}</p>
-              <p className="brand-heading mt-6 text-5xl font-bold leading-none text-transparent [-webkit-text-stroke:1px_rgba(200,205,220,0.35)]">
+              <p className="brand-heading mt-6 text-5xl font-bold leading-none text-transparent [-webkit-text-stroke:1px_rgba(232,235,243,0.55)]">
                 {String(index + 1).padStart(2, "0")}
               </p>
             </SurfaceCard>

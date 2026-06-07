@@ -59,7 +59,9 @@ export function createApp() {
     listingRepository,
     eventService,
     purchaseRepository,
-    purchaseRequestRepository
+    purchaseRequestRepository,
+    userRepository,
+    emailSender
   );
   const wishlistRepository = new MongoWishlistRepository();
 

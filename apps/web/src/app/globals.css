@@ -4,10 +4,11 @@
   --background: #07060f;
   --surface: #110c1f;
   --surface-elevated: #181230;
-  --foreground: #f3f4fb;
-  --muted: #aab1c5;
-  --silver: #c8cddc;
-  --silver-soft: rgba(200, 205, 220, 0.55);
+  --foreground: #fbfcff;
+  --muted: #e1e5ef;
+  --silver: #f1f4fb;
+  --silver-bright: #ffffff;
+  --silver-soft: rgba(241, 244, 251, 0.85);
   --neon-pink: #ff2ea8;
   --neon-pink-soft: #ff66c4;
   --neon-blue: #22d3ff;
@@ -18,8 +19,8 @@
   --danger: #fb7185;
   --ring: rgba(255, 46, 168, 0.45);
   --ring-blue: rgba(34, 211, 255, 0.45);
-  --border: rgba(200, 205, 220, 0.22);
-  --border-strong: rgba(200, 205, 220, 0.42);
+  --border: rgba(232, 235, 243, 0.3);
+  --border-strong: rgba(232, 235, 243, 0.55);
   --radius-lg: 1.25rem;
   --radius-md: 0.85rem;
   --space-xs: 0.375rem;
@@ -79,8 +80,8 @@ a {
 
 .faint-glow {
   box-shadow:
-    0 0 0 1px rgba(200, 205, 220, 0.08),
-    0 12px 30px rgba(255, 46, 168, 0.12),
+    0 0 0 1px rgba(232, 235, 243, 0.14),
+    0 12px 30px rgba(255, 46, 168, 0.14),
     0 18px 48px rgba(7, 6, 15, 0.55);
 }
 
@@ -117,12 +118,13 @@ a {
   gap: 0.5rem;
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(200, 205, 220, 0.06);
+  border: 1px solid var(--border-strong);
+  background: rgba(241, 244, 251, 0.1);
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--silver);
+  text-shadow: 0 0 10px rgba(241, 244, 251, 0.25);
 }
 
 .brand-pill .dot {
@@ -139,6 +141,15 @@ a {
 
 .silver-text {
   color: var(--silver);
+  text-shadow: 0 0 14px rgba(241, 244, 251, 0.18);
+}
+
+.silver-text-strong {
+  background: linear-gradient(180deg, #ffffff 0%, #e6eaf4 60%, #c9d0e0 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .text-success {

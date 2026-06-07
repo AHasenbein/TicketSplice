@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
+import { env } from "../../../config/env.js";
 import { HttpError } from "../../../shared/http-error.js";
 import { EventService } from "../../events/application/event-service.js";
+import type { EmailSender } from "../../auth/domain/email-sender.js";
+import type { UserRepository } from "../../auth/domain/user-repository.js";
 import type { Listing } from "../domain/listing.js";
 import type { ListingRepository } from "../domain/listing-repository.js";
 import type { PurchaseRepository } from "../domain/purchase-repository.js";
@@ -62,7 +65,9 @@ export class ListingService {
     private readonly listingRepository: ListingRepository,
     private readonly eventService: EventService,
     private readonly purchaseRepository: PurchaseRepository,
-    private readonly purchaseRequestRepository: PurchaseRequestRepository
+    private readonly purchaseRequestRepository: PurchaseRequestRepository,
+    private readonly userRepository?: UserRepository,
+    private readonly emailSender?: EmailSender
   ) {}
 
   async createListing(input: CreateListingInput): Promise<ListingResponse> {
@@ -170,7 +175,7 @@ export class ListingService {
       throw new HttpError(404, "Listing not found.");
     }
 
-    if (listing.sellerId === input.buyerId) {
+    if (listing.sellerId === input.buyerId && env.NODE_ENV !== "development") {
       throw new HttpError(400, "You cannot buy your own listing.");
     }
 
@@ -179,6 +184,7 @@ export class ListingService {
     }
 
     const requestId = crypto.randomUUID();
+    const trimmedPhone = input.buyerPhone.trim();
     await this.purchaseRequestRepository.create({
       id: requestId,
       listingId: listing.id,
@@ -186,20 +192,75 @@ export class ListingService {
       buyerId: input.buyerId,
       sellerId: listing.sellerId,
       quantity: input.quantity,
-      buyerPhone: input.buyerPhone.trim(),
+      buyerPhone: trimmedPhone,
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date()
+    });
+
+    await this.notifySellerOfPurchaseRequest({
+      listing,
+      buyerId: input.buyerId,
+      quantity: input.quantity,
+      buyerPhone: trimmedPhone
     });
 
     return {
       requestId,
       listingId: listing.id,
       requestedQuantity: input.quantity,
-      buyerPhone: input.buyerPhone.trim(),
+      buyerPhone: trimmedPhone,
       status: "pending",
       message: "Request sent. Seller will reach out to your phone shortly."
     };
+  }
+
+  private async notifySellerOfPurchaseRequest(input: {
+    listing: Listing;
+    buyerId: string;
+    quantity: number;
+    buyerPhone: string;
+  }): Promise<void> {
+    if (!this.emailSender || !this.userRepository) {
+      return;
+    }
+    try {
+      const [seller, buyer, event] = await Promise.all([
+        this.userRepository.findById(input.listing.sellerId),
+        this.userRepository.findById(input.buyerId),
+        this.eventService.getEventById(input.listing.eventId)
+      ]);
+      if (!seller) {
+        console.warn(
+          `[email] skipping purchase request email: seller ${input.listing.sellerId} not found`
+        );
+        return;
+      }
+      const totalPriceCents = input.listing.priceCents * input.quantity;
+      const listingUrl = `${env.APP_WEB_URL.replace(/\/+$/, "")}/listings/${input.listing.id}`;
+      await this.emailSender.sendPurchaseRequestEmail({
+        sellerEmail: seller.email,
+        sellerName: seller.displayName,
+        buyerName: buyer?.displayName ?? "A Miami Tix buyer",
+        buyerEmail: buyer?.email ?? "unknown@miamitix.com",
+        buyerPhone: input.buyerPhone,
+        quantity: input.quantity,
+        pricePerTicketCents: input.listing.priceCents,
+        totalPriceCents,
+        listingTitle: input.listing.title,
+        seatType: input.listing.seatType,
+        eventTitle: event.title,
+        eventCity: event.city,
+        eventVenue:
+          event.venue && event.venue.trim() && event.venue.trim() !== "TBD"
+            ? event.venue
+            : undefined,
+        eventStartAt: event.startAt,
+        listingUrl
+      });
+    } catch (error) {
+      console.error("[email] purchase request notification failed:", error);
+    }
   }
 
   private async toResponse(listing: Listing, eventInput?: Awaited<ReturnType<EventService["getEventById"]>>): Promise<ListingResponse> {

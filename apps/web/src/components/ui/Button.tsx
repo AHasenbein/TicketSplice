@@ -12,7 +12,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     "border border-[var(--border-strong)] bg-[rgba(34,211,255,0.08)] text-[var(--foreground)] hover:bg-[rgba(34,211,255,0.16)] hover:border-[rgba(34,211,255,0.55)] hover:shadow-[0_0_18px_rgba(34,211,255,0.35)]",
   ghost:
-    "bg-transparent text-[var(--foreground)] border border-[var(--border)] hover:bg-[rgba(200,205,220,0.06)] hover:border-[var(--border-strong)]",
+    "bg-transparent text-[var(--foreground)] border border-[var(--border)] hover:bg-[rgba(232,235,243,0.08)] hover:border-[var(--border-strong)]",
   danger:
     "bg-[linear-gradient(135deg,#f43f5e,#fb7185)] text-white shadow-[0_8px_20px_rgba(244,63,94,0.4)] hover:brightness-110"
 };
