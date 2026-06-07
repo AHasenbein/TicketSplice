@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
-import { getListing, purchaseListing } from "@/lib/api/listings";
+import { getEvent, uploadEventImage } from "@/lib/api/events";
+import { deleteListing, getListing, purchaseListing, updateListing } from "@/lib/api/listings";
 import type { Listing } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
 import { Alert } from "../ui/Alert";
@@ -21,10 +23,21 @@ interface ListingDetailProps {
 export function ListingDetail({ listingId }: ListingDetailProps) {
   const router = useRouter();
   const [listing, setListing] = useState<Listing | null>(null);
+  const [eventImageUrl, setEventImageUrl] = useState("");
+  const [eventImageDataToUpload, setEventImageDataToUpload] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isTopTrustedSeller, setIsTopTrustedSeller] = useState(false);
   const [quantity, setQuantity] = useState("1");
   const [phone, setPhone] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editQuantity, setEditQuantity] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingListing, setIsEditingListing] = useState(false);
+  const [isDeletingListing, setIsDeletingListing] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -36,6 +49,14 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
         const response = await getListing(listingId);
         if (!cancelled) {
           setListing(response);
+          setEditTitle(response.title);
+          setEditPrice((response.priceCents / 100).toFixed(2));
+          setEditQuantity(String(response.quantity));
+        }
+        const eventResponse = await getEvent(response.eventId);
+        if (!cancelled) {
+          setEventImageUrl(eventResponse.imageUrl ?? "");
+          setEventImageDataToUpload("");
         }
       } catch (error) {
         if (!cancelled) {
@@ -50,7 +71,24 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
       }
     }
 
+    async function loadCurrentUser() {
+      const token = readAuthToken();
+      if (!token) {
+        return;
+      }
+      try {
+        const response = await getCurrentUser(token);
+        if (!cancelled) {
+          setCurrentUserId(response.user.id);
+          setIsTopTrustedSeller(response.user.isTopTrustedSeller);
+        }
+      } catch {
+        // Ignore user lookup errors and keep page usable.
+      }
+    }
+
     void loadListing();
+    void loadCurrentUser();
     return () => {
       cancelled = true;
     };
@@ -91,6 +129,111 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
     }
   }
 
+  async function handleEditListing(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const token = readAuthToken();
+    if (!token || !listing) {
+      router.push(`/auth/login?returnTo=${encodeURIComponent(`/listings/${listingId}`)}`);
+      return;
+    }
+
+    const parsedPrice = Math.round(Number(editPrice) * 100);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 100) {
+      setErrorMessage("Price must be at least $1.00.");
+      return;
+    }
+    const parsedQuantity = Number(editQuantity);
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 20) {
+      setErrorMessage("Quantity must be between 1 and 20.");
+      return;
+    }
+
+    setIsEditingListing(true);
+    setIsUploadingImage(Boolean(eventImageDataToUpload));
+    setErrorMessage("");
+    setMessage("");
+    try {
+      let uploadedEventImageUrl = eventImageUrl || undefined;
+      if (eventImageDataToUpload) {
+        uploadedEventImageUrl = await uploadEventImage(eventImageDataToUpload, token);
+      }
+      const updated = await updateListing(
+        listing.id,
+        {
+          title: editTitle.trim(),
+          priceCents: parsedPrice,
+          quantity: parsedQuantity,
+          eventImageUrl: uploadedEventImageUrl
+        },
+        token
+      );
+      setListing(updated);
+      setEditTitle(updated.title);
+      setEditPrice((updated.priceCents / 100).toFixed(2));
+      setEditQuantity(String(updated.quantity));
+      setEventImageUrl(uploadedEventImageUrl ?? "");
+      setEventImageDataToUpload("");
+      setMessage("Listing updated.");
+    } catch (error) {
+      setErrorMessage(error instanceof ApiClientError ? error.message : "Could not update listing.");
+    } finally {
+      setIsEditingListing(false);
+      setIsUploadingImage(false);
+    }
+  }
+
+  function handleEventImageUpload(file: File | null) {
+    if (!file) {
+      setEventImageDataToUpload("");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Please choose an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMessage("Image must be 2MB or smaller.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result.startsWith("data:image/")) {
+        setErrorMessage("Could not read image. Try another file.");
+        return;
+      }
+      setEventImageUrl(result);
+      setEventImageDataToUpload(result);
+      setErrorMessage("");
+    };
+    reader.onerror = () => {
+      setErrorMessage("Could not read image. Try another file.");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleDeleteListing() {
+    const token = readAuthToken();
+    if (!token || !listing) {
+      router.push(`/auth/login?returnTo=${encodeURIComponent(`/listings/${listingId}`)}`);
+      return;
+    }
+    if (!window.confirm("Delete this listing? This cannot be undone.")) {
+      return;
+    }
+
+    setIsDeletingListing(true);
+    setErrorMessage("");
+    setMessage("");
+    try {
+      await deleteListing(listing.id, token);
+      router.push("/listings/mine");
+    } catch (error) {
+      setErrorMessage(error instanceof ApiClientError ? error.message : "Could not delete listing.");
+      setIsDeletingListing(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <p className="muted-text text-sm" role="status" aria-live="polite">
@@ -106,6 +249,9 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
   if (!listing) {
     return <p className="muted-text text-sm">Listing not found.</p>;
   }
+
+  const canEditListing = Boolean(currentUserId) && (currentUserId === listing.sellerId || isTopTrustedSeller);
+  const canDeleteListing = currentUserId === listing.sellerId;
 
   return (
     <SurfaceCard className="grid max-w-xl gap-4 p-6 sm:p-8">
@@ -161,6 +307,91 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
           {isSubmitting ? "Sending request..." : "Request tickets"}
         </Button>
       </form>
+      {canEditListing ? (
+        <div className="grid gap-3">
+          <Button
+            onClick={() => setIsEditFormOpen((current) => !current)}
+            type="button"
+            variant="secondary"
+          >
+            {isEditFormOpen ? "Close edit listing" : "Edit listing"}
+          </Button>
+          {isEditFormOpen ? (
+            <form
+              className="grid gap-3 rounded-[var(--radius-md)] border border-[var(--border)] p-4"
+              onSubmit={handleEditListing}
+            >
+              <h2 className="brand-heading text-base font-semibold">Edit listing</h2>
+              <Input
+                label="Listing title"
+                onChange={(event) => setEditTitle(event.target.value)}
+                value={editTitle}
+              />
+              <Input
+                label="Price per ticket (USD)"
+                min="1"
+                onChange={(event) => setEditPrice(event.target.value)}
+                step="0.01"
+                type="number"
+                value={editPrice}
+              />
+              <Input
+                label="Quantity available"
+                max={20}
+                min={1}
+                onChange={(event) => setEditQuantity(event.target.value)}
+                type="number"
+                value={editQuantity}
+              />
+              <label className="grid gap-1.5 text-sm">
+                <span className="muted-text">Event image</span>
+                <input
+                  accept="image/*"
+                  className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                  onChange={(event) => handleEventImageUpload(event.target.files?.[0] ?? null)}
+                  type="file"
+                />
+              </label>
+              {eventImageUrl ? (
+                <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+                  <img
+                    alt={`${listing.eventTitle} event image preview`}
+                    className="h-44 w-full object-cover"
+                    src={eventImageUrl}
+                  />
+                </div>
+              ) : null}
+              <Button disabled={isEditingListing} type="submit" variant="secondary">
+                {isEditingListing
+                  ? isUploadingImage
+                    ? "Uploading image..."
+                    : "Saving..."
+                  : "Save listing changes"}
+              </Button>
+              {canDeleteListing ? (
+                <Button
+                  disabled={isDeletingListing}
+                  onClick={handleDeleteListing}
+                  type="button"
+                  variant="danger"
+                >
+                  {isDeletingListing ? "Deleting..." : "Delete listing"}
+                </Button>
+              ) : null}
+            </form>
+          ) : null}
+          {canDeleteListing && !isEditFormOpen ? (
+            <Button
+              disabled={isDeletingListing}
+              onClick={handleDeleteListing}
+              type="button"
+              variant="danger"
+            >
+              {isDeletingListing ? "Deleting..." : "Delete listing"}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       {message ? <Alert tone="success">{message}</Alert> : null}
       {message ? (
         <ButtonLink href="/listings/mine" variant="secondary" className="h-9 px-3">

@@ -6,9 +6,11 @@ import { AuthService } from "../../auth/application/auth-service.js";
 import { EventService } from "../application/event-service.js";
 import { ListingService } from "../../listings/application/listing-service.js";
 import { getMongoDb } from "../../../database/mongo.js";
+import { uploadEventImageData } from "../../../shared/cloudinary-uploader.js";
 import {
   assertPrimaryTrustedSeller,
-  assertTrustedSeller
+  assertTrustedSeller,
+  isTopTrustedSeller
 } from "../../../shared/trusted-seller.js";
 
 const createEventSchema = z.object({
@@ -17,7 +19,26 @@ const createEventSchema = z.object({
   venue: z.string().trim().min(2).max(120),
   city: z.string().trim().min(2).max(80),
   startAt: z.string().datetime(),
+  imageUrl: z.string().max(2_500_000).optional(),
   description: z.string().trim().max(600).optional()
+});
+
+const updateEventSchema = z
+  .object({
+    title: z.string().trim().min(2).max(120).optional(),
+    artists: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
+    venue: z.string().trim().max(120).optional(),
+    city: z.string().trim().min(2).max(80).optional(),
+    startAt: z.string().datetime().optional(),
+    imageUrl: z.string().max(2_500_000).optional(),
+    description: z.string().trim().max(600).optional()
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Provide at least one event field to update."
+  });
+
+const uploadEventImageSchema = z.object({
+  imageDataUrl: z.string().min(1).max(2_500_000)
 });
 
 function extractBearerToken(authorizationHeader?: string): string {
@@ -95,9 +116,53 @@ export function createEventRoutes(
         venue: input.venue,
         city: input.city,
         startAt: input.startAt,
+        imageUrl: input.imageUrl,
         description: input.description
       });
       res.status(201).json({ event });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.patch("/:eventId", async (req, res, next) => {
+    try {
+      const token = extractBearerToken(req.headers.authorization);
+      const user = await authService.getCurrentUser(token);
+      const existingEvent = await eventService.getEventById(req.params.eventId);
+      const canEdit = existingEvent.organizerId === user.id || isTopTrustedSeller(user.email);
+      if (!canEdit) {
+        throw new HttpError(
+          403,
+          "Only the event organizer or one of the top 3 trusted sellers can edit events."
+        );
+      }
+
+      const input = updateEventSchema.parse(req.body);
+      const event = await eventService.updateEvent({
+        eventId: req.params.eventId,
+        title: input.title,
+        artists: input.artists,
+        venue: input.venue,
+        city: input.city,
+        startAt: input.startAt,
+        imageUrl: input.imageUrl,
+        description: input.description
+      });
+      res.status(200).json({ event });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/upload-image", async (req, res, next) => {
+    try {
+      const token = extractBearerToken(req.headers.authorization);
+      const user = await authService.getCurrentUser(token);
+      assertTrustedSeller(user.email);
+      const input = uploadEventImageSchema.parse(req.body);
+      const imageUrl = await uploadEventImageData(input.imageDataUrl);
+      res.status(201).json({ imageUrl });
     } catch (error) {
       next(error);
     }

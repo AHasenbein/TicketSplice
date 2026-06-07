@@ -53,6 +53,11 @@ export class MongoListingRepository implements ListingRepository {
     return listing;
   }
 
+  async delete(id: string): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.deleteOne({ _id: id });
+  }
+
   async list(): Promise<Listing[]> {
     const collection = await this.getCollection();
     const documents = await collection.find({}).sort({ createdAt: -1 }).toArray();

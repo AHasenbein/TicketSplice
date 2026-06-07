@@ -8,13 +8,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-[linear-gradient(135deg,var(--accent),var(--accent-soft))] text-white shadow-[0_8px_20px_rgba(62,164,255,0.3)] hover:brightness-110",
+    "bg-[linear-gradient(135deg,var(--neon-pink),var(--neon-blue))] text-white shadow-[0_10px_28px_rgba(255,46,168,0.45),inset_0_0_0_1px_rgba(255,255,255,0.12)] hover:brightness-110 hover:shadow-[0_14px_32px_rgba(34,211,255,0.45),inset_0_0_0_1px_rgba(255,255,255,0.2)]",
   secondary:
-    "border border-white/15 bg-white/4 text-[var(--foreground)] hover:bg-white/10",
+    "border border-[var(--border-strong)] bg-[rgba(34,211,255,0.08)] text-[var(--foreground)] hover:bg-[rgba(34,211,255,0.16)] hover:border-[rgba(34,211,255,0.55)] hover:shadow-[0_0_18px_rgba(34,211,255,0.35)]",
   ghost:
-    "bg-white/0 text-[var(--foreground)] border border-[var(--border)] hover:bg-white/6",
+    "bg-transparent text-[var(--foreground)] border border-[var(--border)] hover:bg-[rgba(200,205,220,0.06)] hover:border-[var(--border-strong)]",
   danger:
-    "bg-[linear-gradient(135deg,#f43f5e,#fb7185)] text-white shadow-[0_8px_20px_rgba(244,63,94,0.35)] hover:brightness-110"
+    "bg-[linear-gradient(135deg,#f43f5e,#fb7185)] text-white shadow-[0_8px_20px_rgba(244,63,94,0.4)] hover:brightness-110"
 };
 
 interface ButtonClassOptions {

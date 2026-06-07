@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 import type { AuthUser } from "@/lib/api/auth";
 import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
+import { uploadEventImage } from "@/lib/api/events";
 import { createListing, listMarketEventSuggestions } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
 import { Alert } from "../ui/Alert";
@@ -38,8 +39,11 @@ export function CreateListingForm() {
   const [eventId, setEventId] = useState<string | undefined>(undefined);
   const [eventTitle, setEventTitle] = useState("");
   const [eventArtist, setEventArtist] = useState("");
+  const [eventVenue, setEventVenue] = useState("");
   const [eventCity, setEventCity] = useState("");
   const [eventDateTime, setEventDateTime] = useState("");
+  const [eventImageUrl, setEventImageUrl] = useState("");
+  const [eventImageDataToUpload, setEventImageDataToUpload] = useState("");
   const [debouncedEventTitle, setDebouncedEventTitle] = useState("");
   const [debouncedEventArtist, setDebouncedEventArtist] = useState("");
   const [debouncedEventCity, setDebouncedEventCity] = useState("");
@@ -51,9 +55,11 @@ export function CreateListingForm() {
     Array<{
       eventId: string;
       title: string;
+      venue: string;
       city: string;
       startAt: string;
       artists: string[];
+      imageUrl?: string;
       activeListingCount: number;
       currentPriceCents: number;
     }>
@@ -63,7 +69,11 @@ export function CreateListingForm() {
   const [priceError, setPriceError] = useState("");
   const [quantityError, setQuantityError] = useState("");
   const [eventTitleError, setEventTitleError] = useState("");
+  const [eventVenueError, setEventVenueError] = useState("");
+  const [eventCityError, setEventCityError] = useState("");
   const [eventDateTimeError, setEventDateTimeError] = useState("");
+  const [eventImageError, setEventImageError] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,6 +141,10 @@ export function CreateListingForm() {
           setMarketPriceCents(exactMatch?.currentPriceCents ?? null);
           if (exactMatch) {
             setEventId(exactMatch.eventId);
+            setEventVenue(exactMatch.venue);
+            setEventCity(exactMatch.city);
+            setEventImageUrl(exactMatch.imageUrl ?? "");
+            setEventImageDataToUpload("");
             setEventDateTime(toDateTimeLocalValue(exactMatch.startAt));
           } else {
             setEventId(undefined);
@@ -168,6 +182,16 @@ export function CreateListingForm() {
       return;
     }
     setEventTitleError("");
+    if (!eventVenue.trim()) {
+      setEventVenueError("Venue is required.");
+      return;
+    }
+    setEventVenueError("");
+    if (!eventCity.trim()) {
+      setEventCityError("City is required.");
+      return;
+    }
+    setEventCityError("");
     const eventStartAtIso = toIsoFromDateTimeLocal(eventDateTime);
     if (!eventStartAtIso) {
       setEventDateTimeError("Event date and time are required.");
@@ -192,15 +216,22 @@ export function CreateListingForm() {
     setQuantityError("");
 
     setIsSubmitting(true);
+    setIsUploadingImage(Boolean(eventImageDataToUpload));
     setErrorMessage("");
     try {
+      let uploadedImageUrl = eventImageUrl || undefined;
+      if (eventImageDataToUpload) {
+        uploadedImageUrl = await uploadEventImage(eventImageDataToUpload, token);
+      }
       const listing = await createListing(
         {
           eventId,
           eventTitle: eventTitle.trim(),
           eventArtist: eventArtist.trim() || undefined,
-          eventCity: eventCity.trim() || undefined,
+          eventVenue: eventVenue.trim(),
+          eventCity: eventCity.trim(),
           eventStartAt: eventStartAtIso,
+          eventImageUrl: uploadedImageUrl,
           seatType,
           priceCents,
           quantity: parsedQuantity,
@@ -218,7 +249,40 @@ export function CreateListingForm() {
       }
     } finally {
       setIsSubmitting(false);
+      setIsUploadingImage(false);
     }
+  }
+
+  function handleEventImageUpload(file: File | null) {
+    if (!file) {
+      setEventImageUrl("");
+      setEventImageDataToUpload("");
+      setEventImageError("");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setEventImageError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setEventImageError("Image must be 2MB or smaller.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result.startsWith("data:image/")) {
+        setEventImageError("Could not read image. Try another file.");
+        return;
+      }
+      setEventImageUrl(result);
+      setEventImageDataToUpload(result);
+      setEventImageError("");
+    };
+    reader.onerror = () => {
+      setEventImageError("Could not read image. Try another file.");
+    };
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -256,12 +320,49 @@ export function CreateListingForm() {
             placeholder="Artist name"
           />
           <Input
-            label="City (optional)"
-            onChange={(event) => setEventCity(event.target.value)}
-            value={eventCity}
-            placeholder="City"
+            label="Venue"
+            onChange={(event) => {
+              setEventVenue(event.target.value);
+              setEventId(undefined);
+            }}
+            value={eventVenue}
+            placeholder="Venue"
+            required
+            errorMessage={eventVenueError || undefined}
           />
         </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            label="City"
+            onChange={(event) => {
+              setEventCity(event.target.value);
+              setEventId(undefined);
+            }}
+            value={eventCity}
+            placeholder="City"
+            required
+            errorMessage={eventCityError || undefined}
+          />
+          <label className="grid gap-1.5 text-sm">
+            <span className="muted-text">Event image (optional)</span>
+            <input
+              accept="image/*"
+              className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+              onChange={(event) => handleEventImageUpload(event.target.files?.[0] ?? null)}
+              type="file"
+            />
+            {eventImageError ? <span className="text-xs text-danger">{eventImageError}</span> : null}
+          </label>
+        </div>
+        {eventImageUrl ? (
+          <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+            <img
+              src={eventImageUrl}
+              alt="Event upload preview"
+              className="h-44 w-full object-cover"
+            />
+          </div>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <Input
             label="Event date"
@@ -306,7 +407,10 @@ export function CreateListingForm() {
                 onClick={() => {
                   setEventId(eventSuggestion.eventId);
                   setEventTitle(eventSuggestion.title);
+                  setEventVenue(eventSuggestion.venue);
                   setEventCity(eventSuggestion.city);
+                  setEventImageUrl(eventSuggestion.imageUrl ?? "");
+                  setEventImageDataToUpload("");
                   setEventDateTime(toDateTimeLocalValue(eventSuggestion.startAt));
                   setMarketPriceCents(eventSuggestion.currentPriceCents);
                 }}
@@ -314,6 +418,7 @@ export function CreateListingForm() {
               >
                 <p className="text-sm text-[var(--foreground)]">{eventSuggestion.title}</p>
                 <p className="muted-text text-xs">
+                  {eventSuggestion.venue ? `${eventSuggestion.venue} - ` : ""}
                   {eventSuggestion.city} - from $
                   {(eventSuggestion.currentPriceCents / 100).toFixed(2)} (
                   {eventSuggestion.activeListingCount} listings)
@@ -372,7 +477,7 @@ export function CreateListingForm() {
         ) : null}
         <div className="flex flex-wrap gap-2 pt-1">
           <Button disabled={isSubmitting || (currentUser ? !currentUser.isTrustedSeller : true)} type="submit">
-            {isSubmitting ? "Publishing..." : "Publish listing"}
+            {isSubmitting ? (isUploadingImage ? "Uploading image..." : "Publishing...") : "Publish listing"}
           </Button>
           <Button
             variant="ghost"

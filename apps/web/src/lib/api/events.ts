@@ -8,6 +8,7 @@ export interface Event {
   venue: string;
   city: string;
   startAt: string;
+  imageUrl?: string;
   description?: string;
   isHouseMusic: boolean;
   createdAt: string;
@@ -21,12 +22,27 @@ interface EventResponse {
   event: Event;
 }
 
+interface UploadEventImageResponse {
+  imageUrl: string;
+}
+
 export interface CreateEventInput {
   title: string;
   artists?: string[];
   venue: string;
   city: string;
   startAt: string;
+  imageUrl?: string;
+  description?: string;
+}
+
+export interface UpdateEventInput {
+  title?: string;
+  artists?: string[];
+  venue?: string;
+  city?: string;
+  startAt?: string;
+  imageUrl?: string;
   description?: string;
 }
 
@@ -64,6 +80,31 @@ export async function createEvent(input: CreateEventInput, token: string): Promi
     body: JSON.stringify(input)
   });
   return response.event;
+}
+
+export async function updateEvent(
+  eventId: string,
+  input: UpdateEventInput,
+  token: string
+): Promise<Event> {
+  const response = await apiRequest<EventResponse>(`/api/v1/events/${eventId}`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(input)
+  });
+  return response.event;
+}
+
+export async function uploadEventImage(
+  imageDataUrl: string,
+  token: string
+): Promise<string> {
+  const response = await apiRequest<UploadEventImageResponse>("/api/v1/events/upload-image", {
+    method: "POST",
+    token,
+    body: JSON.stringify({ imageDataUrl })
+  });
+  return response.imageUrl;
 }
 
 export async function deleteAllEventsLocal(token: string): Promise<{

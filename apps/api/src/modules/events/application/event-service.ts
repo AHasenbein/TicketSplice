@@ -10,6 +10,18 @@ export interface CreateEventInput {
   venue: string;
   city: string;
   startAt: string;
+  imageUrl?: string;
+  description?: string;
+}
+
+export interface UpdateEventInput {
+  eventId: string;
+  title?: string;
+  artists?: string[];
+  venue?: string;
+  city?: string;
+  startAt?: string;
+  imageUrl?: string;
   description?: string;
 }
 
@@ -21,6 +33,7 @@ export interface EventResponse {
   venue: string;
   city: string;
   startAt: string;
+  imageUrl?: string;
   description?: string;
   isHouseMusic: boolean;
   createdAt: string;
@@ -51,6 +64,7 @@ export class EventService {
       venue: input.venue.trim(),
       city: input.city.trim(),
       startAt,
+      imageUrl: this.normalizeImageUrl(input.imageUrl),
       description: input.description?.trim() || undefined,
       createdAt: new Date()
     });
@@ -88,6 +102,35 @@ export class EventService {
     return this.toResponse(event);
   }
 
+  async updateEvent(input: UpdateEventInput): Promise<EventResponse> {
+    const event = await this.eventRepository.findById(input.eventId);
+    if (!event) {
+      throw new HttpError(404, "Event not found.");
+    }
+
+    const nextStartAt = input.startAt ? new Date(input.startAt) : event.startAt;
+    if (Number.isNaN(nextStartAt.getTime())) {
+      throw new HttpError(400, "Event start date is invalid.");
+    }
+
+    const updated: Event = {
+      ...event,
+      title: input.title?.trim() || event.title,
+      artists: input.artists ? this.normalizeArtists(input.artists) : event.artists,
+      venue: input.venue?.trim() ?? event.venue,
+      city: input.city?.trim() || event.city,
+      startAt: nextStartAt,
+      imageUrl: input.imageUrl !== undefined ? this.normalizeImageUrl(input.imageUrl) : event.imageUrl,
+      description:
+        input.description !== undefined
+          ? input.description.trim() || undefined
+          : event.description
+    };
+
+    const saved = await this.eventRepository.update(updated);
+    return this.toResponse(saved);
+  }
+
   async listArtistSuggestions(input: { query?: string; limit?: number } = {}): Promise<string[]> {
     const events = await this.eventRepository.list();
     const normalizedQuery = input.query?.trim().toLowerCase();
@@ -112,6 +155,7 @@ export class EventService {
       venue: event.venue,
       city: event.city,
       startAt: event.startAt.toISOString(),
+      imageUrl: event.imageUrl,
       description: event.description,
       isHouseMusic: false,
       createdAt: event.createdAt.toISOString()
@@ -121,9 +165,11 @@ export class EventService {
   async findOrCreateEventForListing(input: {
     title: string;
     artist?: string;
-    city?: string;
+    venue: string;
+    city: string;
     startAt?: string;
     sellerId: string;
+    imageUrl?: string;
   }): Promise<EventResponse> {
     const normalizedTitle = input.title.trim();
     if (!normalizedTitle) {
@@ -134,7 +180,7 @@ export class EventService {
     const existing = allEvents.find(
       (event) =>
         event.title.toLowerCase() === normalizedTitle.toLowerCase() &&
-        (input.city ? event.city.toLowerCase() === input.city.trim().toLowerCase() : true)
+        event.city.toLowerCase() === input.city.trim().toLowerCase()
     );
     if (existing) {
       return this.toResponse(existing);
@@ -150,9 +196,10 @@ export class EventService {
       organizerId: input.sellerId,
       title: normalizedTitle,
       artists: this.normalizeArtists(input.artist ? [input.artist] : []),
-      venue: "",
-      city: input.city?.trim() || "Unknown",
+      venue: input.venue.trim(),
+      city: input.city.trim(),
       startAt: parsedStartAt ?? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+      imageUrl: this.normalizeImageUrl(input.imageUrl),
       description: undefined,
       createdAt: new Date()
     });
@@ -172,5 +219,18 @@ export class EventService {
     }
 
     return Array.from(unique).slice(0, 8);
+  }
+
+  private normalizeImageUrl(input?: string): string | undefined {
+    const normalized = input?.trim();
+    if (!normalized) {
+      return undefined;
+    }
+    const isRemoteHttp = /^https?:\/\//i.test(normalized);
+    const isDataImage = /^data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(normalized);
+    if (!isRemoteHttp && !isDataImage) {
+      throw new HttpError(400, "Event image must be a valid image URL or image upload.");
+    }
+    return normalized;
   }
 }

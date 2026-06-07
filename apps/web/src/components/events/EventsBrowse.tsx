@@ -102,7 +102,7 @@ export function EventsBrowse() {
         </Alert>
       ) : null}
       {!isLoading && !errorMessage && events.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
             <EventCard
               event={event}

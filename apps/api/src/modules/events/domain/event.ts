@@ -6,6 +6,7 @@ export interface Event {
   venue: string;
   city: string;
   startAt: Date;
+  imageUrl?: string;
   description?: string;
   createdAt: Date;
 }

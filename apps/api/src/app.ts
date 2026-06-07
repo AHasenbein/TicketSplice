@@ -24,6 +24,19 @@ import { MongoPurchaseRequestRepository } from "./modules/listings/infrastructur
 
 export function createApp() {
   const app = express();
+  const normalizedConfiguredOrigins = env.CORS_ORIGIN.split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  const developmentOrigins =
+    env.NODE_ENV === "development"
+      ? [
+          "http://localhost:3000",
+          "http://127.0.0.1:3000",
+          "http://localhost:3001",
+          "http://127.0.0.1:3001"
+        ]
+      : [];
+  const allowedOrigins = new Set([...normalizedConfiguredOrigins, ...developmentOrigins]);
 
   const userRepository = new MongoUserRepository();
   const sessionService = new SessionService();
@@ -53,7 +66,15 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN
+      origin(origin, callback) {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+
+        const normalizedOrigin = origin.replace(/\/+$/, "");
+        callback(null, allowedOrigins.has(normalizedOrigin));
+      }
     })
   );
   app.use(express.json());
@@ -74,14 +95,15 @@ export function createApp() {
     )
   );
   app.use("/api/v1/events", createEventRoutes(eventService, authService, listingService));
-  app.use("/api/v1/listings", createListingRoutes(listingService, authService));
+  app.use("/api/v1/listings", createListingRoutes(listingService, authService, eventService));
 
-  app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     if (error instanceof HttpError) {
       res.status(error.statusCode).json({ message: error.message });
       return;
     }
 
+    console.error(`[api] unexpected error on ${req.method} ${req.originalUrl}:`, error);
     res.status(500).json({
       message: "Unexpected server error."
     });

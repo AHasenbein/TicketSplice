@@ -9,6 +9,11 @@ export class InMemoryEventRepository implements EventRepository {
     return event;
   }
 
+  async update(event: Event): Promise<Event> {
+    this.events.set(event.id, event);
+    return event;
+  }
+
   async list(): Promise<Event[]> {
     return Array.from(this.events.values()).sort(
       (left, right) => left.startAt.getTime() - right.startAt.getTime()

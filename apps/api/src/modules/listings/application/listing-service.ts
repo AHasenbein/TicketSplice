@@ -10,8 +10,10 @@ export interface CreateListingInput {
   eventId?: string;
   eventTitle?: string;
   eventArtist?: string;
-  eventCity?: string;
+  eventVenue?: string;
+  eventCity: string;
   eventStartAt?: string;
+  eventImageUrl?: string;
   sellerId: string;
   title?: string;
   seatType: "GA" | "VIP" | "OTHER";
@@ -46,6 +48,15 @@ export interface PurchaseResult {
   message: string;
 }
 
+export interface UpdateListingInput {
+  listingId: string;
+  title?: string;
+  seatType?: "GA" | "VIP" | "OTHER";
+  priceCents?: number;
+  quantity?: number;
+  notes?: string;
+}
+
 export class ListingService {
   constructor(
     private readonly listingRepository: ListingRepository,
@@ -60,9 +71,11 @@ export class ListingService {
       : await this.eventService.findOrCreateEventForListing({
           title: input.eventTitle ?? "",
           artist: input.eventArtist,
+          venue: input.eventVenue ?? "",
           city: input.eventCity,
           startAt: input.eventStartAt,
-          sellerId: input.sellerId
+          sellerId: input.sellerId,
+          imageUrl: input.eventImageUrl
         });
     const now = new Date();
     const listing: Listing = {
@@ -105,6 +118,45 @@ export class ListingService {
     }
 
     return this.toResponse(listing);
+  }
+
+  async updateListing(input: UpdateListingInput): Promise<ListingResponse> {
+    const listing = await this.listingRepository.findById(input.listingId);
+    if (!listing) {
+      throw new HttpError(404, "Listing not found.");
+    }
+
+    const nextPriceCents = input.priceCents ?? listing.priceCents;
+    if (!Number.isInteger(nextPriceCents) || nextPriceCents < 100) {
+      throw new HttpError(400, "Listing price must be at least $1.00.");
+    }
+
+    const nextQuantity = input.quantity ?? listing.quantity;
+    if (!Number.isInteger(nextQuantity) || nextQuantity < 1 || nextQuantity > 20) {
+      throw new HttpError(400, "Listing quantity must be between 1 and 20.");
+    }
+
+    const updated: Listing = {
+      ...listing,
+      title: input.title?.trim() || listing.title,
+      seatType: input.seatType ?? listing.seatType,
+      priceCents: nextPriceCents,
+      quantity: nextQuantity,
+      notes: input.notes !== undefined ? input.notes.trim() || undefined : listing.notes,
+      soldOut: nextQuantity <= 0 ? true : listing.soldOut,
+      updatedAt: new Date()
+    };
+
+    const saved = await this.listingRepository.update(updated);
+    return this.toResponse(saved);
+  }
+
+  async deleteListing(listingId: string): Promise<void> {
+    const listing = await this.listingRepository.findById(listingId);
+    if (!listing) {
+      throw new HttpError(404, "Listing not found.");
+    }
+    await this.listingRepository.delete(listingId);
   }
 
   async purchaseListing(input: {
@@ -179,9 +231,11 @@ export class ListingService {
     Array<{
       eventId: string;
       title: string;
+      venue: string;
       city: string;
       startAt: string;
       artists: string[];
+      imageUrl?: string;
       activeListingCount: number;
       currentPriceCents: number;
     }>
@@ -221,9 +275,11 @@ export class ListingService {
       .map(([eventId, value]) => ({
         eventId,
         title: value.event.title,
+        venue: value.event.venue,
         city: value.event.city,
         startAt: value.event.startAt,
         artists: value.event.artists,
+        imageUrl: value.event.imageUrl,
         activeListingCount: value.listingCount,
         currentPriceCents: value.lowestPrice
       }))

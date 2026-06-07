@@ -11,6 +11,7 @@ interface EventDocument {
   venue: string;
   city: string;
   startAt: Date;
+  imageUrl?: string;
   description?: string;
   createdAt: Date;
 }
@@ -40,6 +41,17 @@ export class MongoEventRepository implements EventRepository {
     return event;
   }
 
+  async update(event: Event): Promise<Event> {
+    const collection = await this.getCollection();
+    await collection.updateOne(
+      { _id: event.id },
+      {
+        $set: this.toDocument(event)
+      }
+    );
+    return event;
+  }
+
   async list(): Promise<Event[]> {
     const collection = await this.getCollection();
     const documents = await collection.find({}).sort({ startAt: 1 }).toArray();
@@ -61,6 +73,7 @@ export class MongoEventRepository implements EventRepository {
       venue: event.venue,
       city: event.city,
       startAt: event.startAt,
+      imageUrl: event.imageUrl,
       description: event.description,
       createdAt: event.createdAt
     };
@@ -75,6 +88,7 @@ export class MongoEventRepository implements EventRepository {
       venue: doc.venue,
       city: doc.city,
       startAt: new Date(doc.startAt),
+      imageUrl: doc.imageUrl,
       description: doc.description,
       createdAt: new Date(doc.createdAt)
     };

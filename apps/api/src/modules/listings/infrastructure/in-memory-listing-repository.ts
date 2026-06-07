@@ -14,6 +14,10 @@ export class InMemoryListingRepository implements ListingRepository {
     return listing;
   }
 
+  async delete(id: string): Promise<void> {
+    this.listings.delete(id);
+  }
+
   async list(): Promise<Listing[]> {
     return Array.from(this.listings.values()).sort(
       (left, right) => right.createdAt.getTime() - left.createdAt.getTime()

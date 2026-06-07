@@ -73,7 +73,9 @@ const server = app.listen(0, async () => {
       },
       body: JSON.stringify({
         eventTitle: smokeEventTitle,
+        eventVenue: "Smoke Arena",
         eventCity: "Chicago",
+        eventStartAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
         seatType: "GA",
         priceCents: 6500,
         quantity: 2

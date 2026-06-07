@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import type { Event } from "@/lib/api/events";
-import { addEventToWishlist } from "@/lib/api/auth";
+import { addEventToWishlist, getCurrentUser } from "@/lib/api/auth";
 import type { Listing } from "@/lib/api/listings";
-import { getEvent } from "@/lib/api/events";
+import { getEvent, updateEvent, uploadEventImage } from "@/lib/api/events";
 import { ApiClientError } from "@/lib/api/client";
 import { listListings } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
@@ -13,6 +14,7 @@ import { ListingCard } from "../listings/ListingCard";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
+import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
 interface EventDetailProps {
@@ -22,7 +24,18 @@ interface EventDetailProps {
 export function EventDetail({ eventId }: EventDetailProps) {
   const [event, setEvent] = useState<Event | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isTopTrustedSeller, setIsTopTrustedSeller] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editVenue, setEditVenue] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editStartAt, setEditStartAt] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editImageDataToUpload, setEditImageDataToUpload] = useState("");
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingEvent, setIsSavingEvent] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [listingsErrorMessage, setListingsErrorMessage] = useState("");
   const [wishlistMessage, setWishlistMessage] = useState("");
@@ -38,6 +51,12 @@ export function EventDetail({ eventId }: EventDetailProps) {
         const eventResponse = await getEvent(eventId);
         if (!cancelled) {
           setEvent(eventResponse);
+          setEditTitle(eventResponse.title);
+          setEditVenue(eventResponse.venue);
+          setEditCity(eventResponse.city);
+          setEditStartAt(eventResponse.startAt.slice(0, 16));
+          setEditImageUrl(eventResponse.imageUrl ?? "");
+          setEditImageDataToUpload("");
         }
       } catch (error) {
         if (!cancelled) {
@@ -71,8 +90,25 @@ export function EventDetail({ eventId }: EventDetailProps) {
       }
     }
 
+    async function loadCurrentUser() {
+      const token = readAuthToken();
+      if (!token) {
+        return;
+      }
+      try {
+        const response = await getCurrentUser(token);
+        if (!cancelled) {
+          setCurrentUserId(response.user.id);
+          setIsTopTrustedSeller(response.user.isTopTrustedSeller);
+        }
+      } catch {
+        // Ignore and keep page usable.
+      }
+    }
+
     void loadEventDetail();
     void loadListings();
+    void loadCurrentUser();
 
     return () => {
       cancelled = true;
@@ -95,6 +131,82 @@ export function EventDetail({ eventId }: EventDetailProps) {
     return <p className="muted-text text-sm">Event not found.</p>;
   }
 
+  const canEditEvent = Boolean(currentUserId) && (currentUserId === event.organizerId || isTopTrustedSeller);
+
+  async function handleEditEvent(submitEvent: FormEvent<HTMLFormElement>) {
+    submitEvent.preventDefault();
+    const token = readAuthToken();
+    if (!token || !event) {
+      setWishlistMessage("Log in to edit this event.");
+      return;
+    }
+
+    const normalizedStartAt = editStartAt ? new Date(editStartAt).toISOString() : event.startAt;
+    setIsSavingEvent(true);
+    setIsUploadingImage(Boolean(editImageDataToUpload));
+    setErrorMessage("");
+    try {
+      let uploadedImageUrl = editImageUrl || undefined;
+      if (editImageDataToUpload) {
+        uploadedImageUrl = await uploadEventImage(editImageDataToUpload, token);
+      }
+      const updated = await updateEvent(
+        event.id,
+        {
+          title: editTitle.trim(),
+          venue: editVenue.trim(),
+          city: editCity.trim(),
+          startAt: normalizedStartAt,
+          imageUrl: uploadedImageUrl
+        },
+        token
+      );
+      setEvent(updated);
+      setEditTitle(updated.title);
+      setEditVenue(updated.venue);
+      setEditCity(updated.city);
+      setEditStartAt(updated.startAt.slice(0, 16));
+      setEditImageUrl(updated.imageUrl ?? "");
+      setEditImageDataToUpload("");
+      setWishlistMessage("Event updated.");
+    } catch (error) {
+      setErrorMessage(error instanceof ApiClientError ? error.message : "Could not update event.");
+    } finally {
+      setIsSavingEvent(false);
+      setIsUploadingImage(false);
+    }
+  }
+
+  function handleEditImageUpload(file: File | null) {
+    if (!file) {
+      setEditImageDataToUpload("");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Please choose an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMessage("Image must be 2MB or smaller.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result.startsWith("data:image/")) {
+        setErrorMessage("Could not read image. Try another file.");
+        return;
+      }
+      setEditImageUrl(result);
+      setEditImageDataToUpload(result);
+      setErrorMessage("");
+    };
+    reader.onerror = () => {
+      setErrorMessage("Could not read image. Try another file.");
+    };
+    reader.readAsDataURL(file);
+  }
+
   const shouldShowVenue = Boolean(event.venue?.trim()) && event.venue.trim() !== "TBD";
   const shouldShowDescription =
     Boolean(event.description?.trim()) &&
@@ -109,25 +221,40 @@ export function EventDetail({ eventId }: EventDetailProps) {
         <span className="muted-text">/</span>
         <span className="muted-text">Event details</span>
       </nav>
-      <SurfaceCard className="grid gap-3 p-6 sm:p-8">
-        <p className="muted-text text-xs uppercase tracking-[0.18em]">{event.city}</p>
-        <h1 className="brand-heading text-3xl font-semibold">{event.title}</h1>
-        {event.artists.length ? (
-          <p className="muted-text text-sm">Artists: {event.artists.join(", ")}</p>
-        ) : null}
-        {event.isHouseMusic ? (
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[rgba(62,164,255,0.95)]">
-            Featured Event
-          </p>
-        ) : null}
-        <p className="muted-text text-sm">
-          {shouldShowVenue ? `${event.venue} - ` : ""}
-          {new Date(event.startAt).toLocaleString()}
-        </p>
-        {shouldShowDescription ? (
-          <p className="text-sm text-white/90">{event.description}</p>
-        ) : null}
-        <div className="flex flex-wrap gap-2 pt-2">
+      <SurfaceCard className="grid gap-4 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="aspect-square w-full max-w-[14rem] shrink-0 self-start overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)] sm:w-56">
+            {event.imageUrl ? (
+              <img
+                alt={`${event.title} event image`}
+                className="h-full w-full object-cover"
+                src={event.imageUrl}
+              />
+            ) : (
+              <div className="h-full w-full bg-[linear-gradient(135deg,rgba(62,164,255,0.22),rgba(255,255,255,0.06))]" />
+            )}
+          </div>
+          <div className="grid min-w-0 flex-1 gap-2">
+            <p className="muted-text text-xs uppercase tracking-[0.18em]">{event.city}</p>
+            <h1 className="brand-heading text-2xl font-semibold">{event.title}</h1>
+            {event.artists.length ? (
+              <p className="muted-text text-sm">Artists: {event.artists.join(", ")}</p>
+            ) : null}
+            {event.isHouseMusic ? (
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[rgba(62,164,255,0.95)]">
+                Featured Event
+              </p>
+            ) : null}
+            <p className="muted-text text-sm">
+              {shouldShowVenue ? `${event.venue} - ` : ""}
+              {new Date(event.startAt).toLocaleString()}
+            </p>
+            {shouldShowDescription ? (
+              <p className="text-sm text-white/90">{event.description}</p>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
           <ButtonLink href="/listings/new">Trusted sellers: list this event</ButtonLink>
           <Button
             variant="secondary"
@@ -152,19 +279,84 @@ export function EventDetail({ eventId }: EventDetailProps) {
           </Button>
         </div>
         {wishlistMessage ? <Alert tone="info">{wishlistMessage}</Alert> : null}
+        {canEditEvent ? (
+          <div className="mt-2 grid gap-3">
+            <Button
+              onClick={() => setIsEditFormOpen((current) => !current)}
+              type="button"
+              variant="secondary"
+            >
+              {isEditFormOpen ? "Close edit event" : "Edit event"}
+            </Button>
+            {isEditFormOpen ? (
+              <form
+                className="grid gap-3 rounded-[var(--radius-md)] border border-[var(--border)] p-4"
+                onSubmit={handleEditEvent}
+              >
+                <h2 className="brand-heading text-base font-semibold">Edit event</h2>
+                <Input
+                  label="Event title"
+                  onChange={(inputEvent) => setEditTitle(inputEvent.target.value)}
+                  value={editTitle}
+                />
+                <Input
+                  label="Venue"
+                  onChange={(inputEvent) => setEditVenue(inputEvent.target.value)}
+                  value={editVenue}
+                />
+                <Input
+                  label="City"
+                  onChange={(inputEvent) => setEditCity(inputEvent.target.value)}
+                  value={editCity}
+                />
+                <Input
+                  label="Start date/time"
+                  onChange={(inputEvent) => setEditStartAt(inputEvent.target.value)}
+                  type="datetime-local"
+                  value={editStartAt}
+                />
+                <label className="grid gap-1.5 text-sm">
+                  <span className="muted-text">Event image</span>
+                  <input
+                    accept="image/*"
+                    className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                    onChange={(inputEvent) => handleEditImageUpload(inputEvent.target.files?.[0] ?? null)}
+                    type="file"
+                  />
+                </label>
+                {editImageUrl ? (
+                  <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+                    <img
+                      alt={`${event.title} event image preview`}
+                      className="h-44 w-full object-cover"
+                      src={editImageUrl}
+                    />
+                  </div>
+                ) : null}
+                <Button variant="secondary" disabled={isSavingEvent} type="submit">
+                  {isSavingEvent
+                    ? isUploadingImage
+                      ? "Uploading image..."
+                      : "Saving..."
+                    : "Save event changes"}
+                </Button>
+              </form>
+            ) : null}
+          </div>
+        ) : null}
       </SurfaceCard>
 
       <section className="grid gap-3">
-        <h2 className="brand-heading text-xl font-semibold">Available ticket listings</h2>
+        <h2 className="brand-heading text-lg font-semibold">Available ticket listings</h2>
         {listingsErrorMessage ? <Alert tone="error">{listingsErrorMessage}</Alert> : null}
         {listings.length ? (
-          <div className="grid gap-3">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {listings.map((listing) => (
               <ListingCard listing={listing} key={listing.id} />
             ))}
           </div>
         ) : (
-          <SurfaceCard className="p-4" elevated={false}>
+          <SurfaceCard className="p-3" elevated={false}>
             <p className="muted-text text-sm">No active listings yet for this event.</p>
           </SurfaceCard>
         )}

@@ -29,12 +29,23 @@ export interface CreateListingInput {
   eventId?: string;
   eventTitle?: string;
   eventArtist?: string;
-  eventCity?: string;
+  eventVenue?: string;
+  eventCity: string;
   eventStartAt?: string;
+  eventImageUrl?: string;
   title?: string;
   seatType: "GA" | "VIP" | "OTHER";
   priceCents: number;
   quantity: number;
+  notes?: string;
+}
+
+export interface UpdateListingInput {
+  title?: string;
+  seatType?: "GA" | "VIP" | "OTHER";
+  priceCents?: number;
+  quantity?: number;
+  eventImageUrl?: string;
   notes?: string;
 }
 
@@ -85,12 +96,34 @@ export function purchaseListing(
   });
 }
 
+export async function updateListing(
+  listingId: string,
+  input: UpdateListingInput,
+  token: string
+): Promise<Listing> {
+  const response = await apiRequest<ListingResponse>(`/api/v1/listings/${listingId}`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(input)
+  });
+  return response.listing;
+}
+
+export function deleteListing(listingId: string, token: string): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>(`/api/v1/listings/${listingId}`, {
+    method: "DELETE",
+    token
+  });
+}
+
 interface MarketEventSuggestion {
   eventId: string;
   title: string;
+  venue: string;
   city: string;
   startAt: string;
   artists: string[];
+  imageUrl?: string;
   activeListingCount: number;
   currentPriceCents: number;
 }

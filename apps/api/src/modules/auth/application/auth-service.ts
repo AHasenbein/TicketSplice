@@ -8,6 +8,7 @@ import { env } from "../../../config/env.js";
 import type { EmailSender } from "../domain/email-sender.js";
 import type { OAuthProviderId, OAuthIdentity } from "../domain/oauth-provider-adapter.js";
 import {
+  isTopTrustedSeller,
   isPrimaryTrustedSeller,
   isTrustedSeller
 } from "../../../shared/trusted-seller.js";
@@ -42,6 +43,7 @@ export interface UserResponse {
   emailVerified: boolean;
   isTrustedSeller: boolean;
   isPrimaryTrustedSeller: boolean;
+  isTopTrustedSeller: boolean;
   createdAt: string;
 }
 
@@ -243,6 +245,7 @@ export class AuthService {
       emailVerified: user.emailVerified,
       isTrustedSeller: isTrustedSeller(user.email),
       isPrimaryTrustedSeller: isPrimaryTrustedSeller(user.email),
+      isTopTrustedSeller: isTopTrustedSeller(user.email),
       createdAt: user.createdAt.toISOString()
     };
   }
