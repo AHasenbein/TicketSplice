@@ -202,8 +202,7 @@ a {
   animation: marqueeScroll 28s linear infinite;
 }
 
-.marquee-track:hover,
-.marquee-fast:hover {
+.marquee-track:hover {
   animation-play-state: paused;
 }
 
