@@ -144,9 +144,9 @@ export default function Home() {
               </div>
               <div>
                 <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-pink-soft)] sm:text-[10px] sm:tracking-[0.22em]">
-                  Median list time
+                  Total fees charged
                 </dt>
-                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">42 s</dd>
+                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">$0.00</dd>
               </div>
               <div>
                 <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--silver)] sm:text-[10px] sm:tracking-[0.22em]">
