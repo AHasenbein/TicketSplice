@@ -200,6 +200,11 @@ a {
 
 .marquee-fast {
   animation: marqueeScroll 28s linear infinite;
+  animation-play-state: running !important;
+}
+
+.marquee-fast:hover {
+  animation-play-state: running !important;
 }
 
 .marquee-track:hover {

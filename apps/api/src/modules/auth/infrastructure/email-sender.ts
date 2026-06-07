@@ -76,26 +76,33 @@ function buildPurchaseRequestHtml(params: PurchaseRequestEmailParams): string {
 
   return `<!DOCTYPE html>
 <html lang="en">
-  <body style="margin:0;padding:0;background:#07060f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#f1f4fb;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#07060f;padding:32px 16px;">
+  <head>
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+  </head>
+  <body style="margin:0;padding:0;background:#f4f5fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111b3a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5fb;padding:32px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:linear-gradient(150deg,rgba(24,18,48,0.95),rgba(10,8,22,0.95));border:1px solid rgba(232,235,243,0.25);border-radius:16px;overflow:hidden;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e3e6f0;border-radius:16px;overflow:hidden;">
+            <tr>
+              <td style="padding:4px 0 0 0;background:linear-gradient(90deg,#ff2ea8,#22d3ff);height:4px;line-height:4px;font-size:0;">&nbsp;</td>
+            </tr>
             <tr>
               <td style="padding:28px 28px 0 28px;">
-                <div style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#22d3ff;">New ticket request</div>
-                <h1 style="margin:10px 0 0 0;font-size:24px;font-weight:700;line-height:1.2;color:#ffffff;">${escapeHtml(params.eventTitle)}</h1>
-                <p style="margin:6px 0 0 0;font-size:13px;color:#cdd3e1;">${venueLine} &middot; ${escapeHtml(formatDateTime(params.eventStartAt))}</p>
+                <div style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#ff2ea8;font-weight:700;">New ticket request</div>
+                <h1 style="margin:10px 0 0 0;font-size:24px;font-weight:700;line-height:1.2;color:#0c1230;">${escapeHtml(params.eventTitle)}</h1>
+                <p style="margin:6px 0 0 0;font-size:13px;color:#4a5378;">${venueLine} &middot; ${escapeHtml(formatDateTime(params.eventStartAt))}</p>
               </td>
             </tr>
             <tr>
               <td style="padding:24px 28px 8px 28px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(232,235,243,0.18);border-radius:12px;background:rgba(255,46,168,0.08);">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ffd0e8;border-radius:12px;background:#fff3fa;">
                   <tr>
                     <td style="padding:18px 20px;">
-                      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#ff66c4;">Buyer phone</div>
-                      <div style="margin-top:6px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:0.02em;">${escapeHtml(params.buyerPhone)}</div>
-                      <div style="margin-top:6px;font-size:13px;color:#e1e5ef;">${escapeHtml(params.buyerName)} &middot; ${escapeHtml(params.buyerEmail)}</div>
+                      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#c81e7b;font-weight:700;">Buyer phone</div>
+                      <div style="margin-top:6px;font-size:24px;font-weight:700;color:#0c1230;letter-spacing:0.02em;">${escapeHtml(params.buyerPhone)}</div>
+                      <div style="margin-top:6px;font-size:13px;color:#4a5378;">${escapeHtml(params.buyerName)} &middot; ${escapeHtml(params.buyerEmail)}</div>
                     </td>
                   </tr>
                 </table>
@@ -104,23 +111,23 @@ function buildPurchaseRequestHtml(params: PurchaseRequestEmailParams): string {
             <tr>
               <td style="padding:8px 28px 0 28px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-                  ${renderRow("Listing", params.listingTitle)}
-                  ${renderRow("Seat type", params.seatType)}
+                  ${renderRow("Listing", escapeHtml(params.listingTitle))}
+                  ${renderRow("Seat type", escapeHtml(params.seatType))}
                   ${renderRow("Price / ticket", formatCurrency(params.pricePerTicketCents))}
                   ${renderRow("Quantity", String(params.quantity))}
-                  ${renderRow("Total", `<strong style=\"color:#ffffff;\">${formatCurrency(params.totalPriceCents)}</strong>`, true)}
+                  ${renderRow("Total", `<strong style=\"color:#0c1230;font-size:16px;\">${formatCurrency(params.totalPriceCents)}</strong>`, true)}
                 </table>
               </td>
             </tr>
             <tr>
               <td style="padding:0 28px 28px 28px;">
-                <p style="margin:18px 0 0 0;font-size:13px;line-height:1.6;color:#cdd3e1;">Reach out to the buyer to finalize the sale. They're expecting your call or text.</p>
+                <p style="margin:18px 0 0 0;font-size:14px;line-height:1.6;color:#4a5378;">Reach out to the buyer to finalize the sale. They're expecting your call or text.</p>
                 ${listingButton}
               </td>
             </tr>
             <tr>
-              <td style="padding:18px 28px 24px 28px;border-top:1px solid rgba(232,235,243,0.15);">
-                <p style="margin:0;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aab1c5;">Miami Tix &middot; Live house music marketplace</p>
+              <td style="padding:18px 28px 24px 28px;border-top:1px solid #e3e6f0;">
+                <p style="margin:0;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7494;font-weight:600;">Miami Tix &middot; Live house music marketplace</p>
               </td>
             </tr>
           </table>
@@ -132,10 +139,10 @@ function buildPurchaseRequestHtml(params: PurchaseRequestEmailParams): string {
 }
 
 function renderRow(label: string, value: string, isLast = false): string {
-  const borderStyle = isLast ? "" : "border-bottom:1px solid rgba(232,235,243,0.12);";
+  const borderStyle = isLast ? "" : "border-bottom:1px solid #eceff7;";
   return `<tr>
-    <td style="padding:10px 0;${borderStyle}font-size:12px;color:#aab1c5;letter-spacing:0.12em;text-transform:uppercase;">${escapeHtml(label)}</td>
-    <td align="right" style="padding:10px 0;${borderStyle}font-size:14px;color:#f1f4fb;">${value}</td>
+    <td style="padding:12px 0;${borderStyle}font-size:11px;color:#6b7494;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">${escapeHtml(label)}</td>
+    <td align="right" style="padding:12px 0;${borderStyle}font-size:14px;color:#0c1230;font-weight:500;">${value}</td>
   </tr>`;
 }
 

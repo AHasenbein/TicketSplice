@@ -122,9 +122,9 @@ export default function Home() {
               <span className="silver-text">without the friction.</span>
             </h1>
             <p className="fade-in-up delay-3 silver-text max-w-2xl text-base leading-relaxed sm:text-lg">
-              Miami Tix is Miami's neon-charged marketplace for fans. Discover events, list tickets
-              in seconds, and move them in minutes — backed by trusted sellers, verified accounts,
-              and a vibe that feels alive.
+              Miami Tix is a zero fees music ticket marketplace for fans. Discover events, join our
+              community, and get tickets in minutes — backed by trusted sellers, verified accounts,
+              and made by people who actually go to events.
             </p>
             <div className="fade-in-up delay-4 flex flex-wrap items-center gap-3">
               <ButtonLink href="/events">Browse events</ButtonLink>
