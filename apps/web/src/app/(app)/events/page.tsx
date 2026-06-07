@@ -3,7 +3,7 @@ import { EventsBrowse } from "@/components/events/EventsBrowse";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 
 export const metadata: Metadata = {
-  title: "Events | Ticket Splice",
+  title: "Events | tix",
   description: "Browse events that currently have tickets listed for sale."
 };
 

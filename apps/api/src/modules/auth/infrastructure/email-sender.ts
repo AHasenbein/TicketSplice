@@ -28,9 +28,9 @@ export class VerificationEmailSender implements EmailSender {
     await transporter.sendMail({
       from: env.EMAIL_FROM,
       to: email,
-      subject: "Verify your Ticket Splice account",
+      subject: "Verify your Miami Tix account",
       text: `Tap this link to verify your email: ${verificationUrl}`,
-      html: `<p>Tap this link to verify your Ticket Splice account:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p>`
+      html: `<p>Tap this link to verify your Miami Tix account:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p>`
     });
 
     return {};

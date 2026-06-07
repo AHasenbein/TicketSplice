@@ -63,13 +63,13 @@ export function AppHeader() {
         >
           <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-md bg-[linear-gradient(135deg,var(--neon-pink),var(--neon-blue))] shadow-[0_0_14px_rgba(255,46,168,0.5)]">
             <span className="absolute inset-0.5 rounded-[5px] bg-[rgba(7,6,15,0.85)]" />
-            <span className="relative text-[10px] font-bold tracking-[0.05em] text-white">TS</span>
+            <span className="relative text-[10px] font-bold tracking-[0.05em] text-white">MT</span>
           </span>
           <span className="hidden sm:inline">
-            Ticket <span className="brand-gradient-text">Splice</span>
+            Miami <span className="brand-gradient-text">Tix</span>
           </span>
           <span className="sm:hidden">
-            <span className="brand-gradient-text">Splice</span>
+            <span className="brand-gradient-text">Tix</span>
           </span>
         </Link>
         <nav className="flex items-center gap-2">

@@ -6,7 +6,7 @@ interface EventDetailPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Event Details | Ticket Splice",
+  title: "Event Details | tix",
   description: "View event details and browse available ticket listings."
 };
 

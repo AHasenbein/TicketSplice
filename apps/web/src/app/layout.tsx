@@ -13,8 +13,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Ticket Splice",
-  description: "Modern marketplace for event ticket exchange and community.",
+  title: "Miami Tix",
+  description: "Miami's neon-charged marketplace for event tickets and house music nights.",
 };
 
 export default function RootLayout({

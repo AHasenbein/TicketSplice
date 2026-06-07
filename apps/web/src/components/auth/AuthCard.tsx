@@ -120,7 +120,7 @@ export function AuthCard({ mode }: AuthCardProps) {
   return (
     <SurfaceCard className="w-full max-w-[28rem] p-6 sm:p-8">
       <div className="mb-7 grid gap-2">
-        <p className="muted-text text-xs uppercase tracking-[0.16em]">Ticket Splice</p>
+        <p className="muted-text text-xs uppercase tracking-[0.16em]">tix</p>
         <h1 className="brand-heading text-3xl font-semibold leading-tight">
           {isRegisterMode ? "Create your account" : "Sign in"}
         </h1>

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { OAuthCallbackClient } from "@/components/auth/OAuthCallbackClient";
 
 export const metadata: Metadata = {
-  title: "OAuth Callback | Ticket Splice",
+  title: "OAuth Callback | Miami Tix",
   description: "Finalizing sign in."
 };
 

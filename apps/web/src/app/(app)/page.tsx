@@ -18,7 +18,7 @@ const featureCards = [
     accent: "blue"
   },
   {
-    eyebrow: "03 · Splice",
+    eyebrow: "03 · Trade",
     title: "Trade with confidence",
     description:
       "Direct contact, fair pricing, and an interface designed to move tickets fast.",
@@ -129,9 +129,9 @@ export default function Home() {
               <span className="silver-text">without the friction.</span>
             </h1>
             <p className="fade-in-up delay-3 silver-text max-w-2xl text-base leading-relaxed sm:text-lg">
-              Ticket Splice is a neon-charged marketplace built for fans. Discover events, list
-              tickets in seconds, and move them in minutes — backed by trusted sellers, verified
-              accounts, and a vibe that feels alive.
+              Miami Tix is Miami's neon-charged marketplace for fans. Discover events, list tickets
+              in seconds, and move them in minutes — backed by trusted sellers, verified accounts,
+              and a vibe that feels alive.
             </p>
             <div className="fade-in-up delay-4 flex flex-wrap items-center gap-3">
               <ButtonLink href="/events">Browse events</ButtonLink>
@@ -222,7 +222,7 @@ export default function Home() {
             Built for trust
           </span>
           <h2 className="brand-heading mt-3 text-3xl font-semibold sm:text-4xl">
-            Why Ticket Splice feels alive
+            Why Miami Tix feels alive
           </h2>
         </header>
         <div className="grid gap-4 md:grid-cols-3">
@@ -267,11 +267,11 @@ export default function Home() {
               Ready when you are
             </span>
             <h2 className="brand-heading mt-3 text-3xl font-semibold text-white sm:text-4xl">
-              Plug in. Splice in. <span className="brand-gradient-text">Vibe out.</span>
+              Plug in. Tune in. <span className="brand-gradient-text">Vibe out.</span>
             </h2>
             <p className="silver-text mt-2 max-w-xl text-sm sm:text-base">
-              Whether you're chasing a sold-out show or moving a spare ticket fast, Ticket Splice
-              keeps it sleek, secure, and electric.
+              Whether you're chasing a sold-out show or moving a spare ticket fast, Miami Tix keeps
+              it sleek, secure, and electric.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
