@@ -83,11 +83,18 @@ export function AuthCard({ mode }: AuthCardProps) {
     try {
       if (isRegisterMode) {
         const result = await register({ displayName, email, password, confirmPassword });
-        setSuccessMessage("Verification email sent. Check your inbox before logging in.");
-        if (result.verificationPreviewUrl && process.env.NODE_ENV === "development") {
-          setSuccessMessage(
-            `Verification email sent. Dev preview link: ${result.verificationPreviewUrl}`
-          );
+        if (result.token) {
+          saveAuthToken(result.token);
+          router.push(returnTo || "/dashboard");
+        } else if (result.verificationRequired) {
+          setSuccessMessage("Verification email sent. Check your inbox before logging in.");
+          if (result.verificationPreviewUrl && process.env.NODE_ENV === "development") {
+            setSuccessMessage(
+              `Verification email sent. Dev preview link: ${result.verificationPreviewUrl}`
+            );
+          }
+        } else {
+          setSuccessMessage("Account created. You can log in now.");
         }
       } else {
         const result = await login({ email, password });

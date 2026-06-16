@@ -81,7 +81,9 @@ export interface LoginInput {
 export interface RegisterResponse {
   user: AuthUser;
   verificationRequired: boolean;
+  verificationEmailSent?: boolean;
   verificationPreviewUrl?: string;
+  token?: string;
 }
 
 export function register(input: RegisterInput): Promise<RegisterResponse> {

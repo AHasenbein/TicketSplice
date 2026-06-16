@@ -34,6 +34,7 @@ export interface RegisterResult {
   verificationRequired: boolean;
   verificationEmailSent: boolean;
   verificationPreviewUrl?: string;
+  token?: string;
 }
 
 export interface UserResponse {
@@ -62,16 +63,23 @@ export class AuthService {
       throw new HttpError(409, "An account with this email already exists.");
     }
 
-    const verificationToken = this.generateVerificationToken();
+    const verificationRequired = env.REQUIRE_EMAIL_VERIFICATION;
+    const verificationToken = verificationRequired
+      ? this.generateVerificationToken()
+      : undefined;
     const passwordHash = await bcrypt.hash(input.password, 12);
     const user: User = {
       id: crypto.randomUUID(),
       email: normalizedEmail,
       displayName: input.displayName.trim(),
       passwordHash,
-      emailVerified: false,
-      emailVerificationTokenHash: this.hashVerificationToken(verificationToken),
-      emailVerificationExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      emailVerified: !verificationRequired,
+      emailVerificationTokenHash: verificationToken
+        ? this.hashVerificationToken(verificationToken)
+        : undefined,
+      emailVerificationExpiresAt: verificationToken
+        ? new Date(Date.now() + 1000 * 60 * 60 * 24)
+        : undefined,
       providers: [
         {
           provider: "password",
@@ -82,8 +90,19 @@ export class AuthService {
     };
 
     const createdUser = await this.userRepository.create(user);
+
+    if (!verificationRequired) {
+      const token = this.sessionService.createToken({ userId: createdUser.id });
+      return {
+        user: this.toUserResponse(createdUser),
+        verificationRequired: false,
+        verificationEmailSent: false,
+        token
+      };
+    }
+
     const verificationUrl = `${env.APP_WEB_URL}/auth/verify-email?token=${encodeURIComponent(
-      verificationToken
+      verificationToken!
     )}`;
 
     let emailResult: VerificationEmailResult = {};
@@ -122,7 +141,7 @@ export class AuthService {
       throw new HttpError(401, "Invalid email or password.");
     }
 
-    if (!user.emailVerified) {
+    if (env.REQUIRE_EMAIL_VERIFICATION && !user.emailVerified) {
       throw new HttpError(
         403,
         "Please verify your email before logging in. Check your inbox for the link."
@@ -171,6 +190,10 @@ export class AuthService {
   }
 
   async resendVerificationEmail(email: string): Promise<{ message: string; previewUrl?: string }> {
+    if (!env.REQUIRE_EMAIL_VERIFICATION) {
+      return { message: "Email verification is currently disabled. You can log in directly." };
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     const user = await this.userRepository.findByEmail(normalizedEmail);
 

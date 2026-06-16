@@ -20,6 +20,10 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   MONGODB_DB_NAME: z.string().min(1).default("ticketsplice"),
   TRUSTED_SELLER_EMAILS: z.string().default(""),
+  REQUIRE_EMAIL_VERIFICATION: z
+    .union([z.literal("true"), z.literal("false")])
+    .default("false")
+    .transform((value) => value === "true"),
   EMAIL_FROM: z
     .string()
     .trim()
