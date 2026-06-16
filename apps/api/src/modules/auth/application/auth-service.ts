@@ -5,7 +5,7 @@ import type { UserRepository } from "../domain/user-repository.js";
 import { HttpError } from "../../../shared/http-error.js";
 import { SessionService } from "./session-service.js";
 import { env } from "../../../config/env.js";
-import type { EmailSender } from "../domain/email-sender.js";
+import type { EmailSender, VerificationEmailResult } from "../domain/email-sender.js";
 import type { OAuthProviderId, OAuthIdentity } from "../domain/oauth-provider-adapter.js";
 import {
   isTopTrustedSeller,
@@ -32,6 +32,7 @@ export interface AuthResult {
 export interface RegisterResult {
   user: UserResponse;
   verificationRequired: boolean;
+  verificationEmailSent: boolean;
   verificationPreviewUrl?: string;
 }
 
@@ -84,14 +85,26 @@ export class AuthService {
     const verificationUrl = `${env.APP_WEB_URL}/auth/verify-email?token=${encodeURIComponent(
       verificationToken
     )}`;
-    const emailResult = await this.emailSender.sendVerificationEmail(
-      createdUser.email,
-      verificationUrl
-    );
+
+    let emailResult: VerificationEmailResult = {};
+    let verificationEmailSent = true;
+    try {
+      emailResult = await this.emailSender.sendVerificationEmail(
+        createdUser.email,
+        verificationUrl
+      );
+    } catch (error) {
+      verificationEmailSent = false;
+      console.error(
+        `[auth] verification email send failed for ${createdUser.email}. User was still created; manual verification URL: ${verificationUrl}`,
+        error
+      );
+    }
 
     return {
       user: this.toUserResponse(createdUser),
       verificationRequired: true,
+      verificationEmailSent,
       verificationPreviewUrl:
         env.NODE_ENV === "production" ? undefined : emailResult.previewUrl
     };
@@ -176,15 +189,25 @@ export class AuthService {
     const verificationUrl = `${env.APP_WEB_URL}/auth/verify-email?token=${encodeURIComponent(
       verificationToken
     )}`;
-    const emailResult = await this.emailSender.sendVerificationEmail(
-      updatedUser.email,
-      verificationUrl
-    );
 
-    return {
-      message: "If an account exists, a verification email has been sent.",
-      previewUrl: env.NODE_ENV === "production" ? undefined : emailResult.previewUrl
-    };
+    try {
+      const emailResult = await this.emailSender.sendVerificationEmail(
+        updatedUser.email,
+        verificationUrl
+      );
+      return {
+        message: "If an account exists, a verification email has been sent.",
+        previewUrl: env.NODE_ENV === "production" ? undefined : emailResult.previewUrl
+      };
+    } catch (error) {
+      console.error(
+        `[auth] resend verification email failed for ${updatedUser.email}. Manual verification URL: ${verificationUrl}`,
+        error
+      );
+      return {
+        message: "If an account exists, a verification email has been sent."
+      };
+    }
   }
 
   async loginOrRegisterOAuth(
