@@ -126,19 +126,19 @@ export function AccountPanel() {
 
       {user ? (
         <dl className="mt-6 grid gap-3 text-sm">
-          <div className="flex justify-between gap-4 silver-border-b py-3">
+          <div className="flex justify-between gap-4 border-b border-[var(--border)] py-3">
             <dt className="muted-text shrink-0">Name</dt>
             <dd className="min-w-0 text-right">{user.displayName}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-3">
+          <div className="flex justify-between gap-4 border-b border-[var(--border)] py-3">
             <dt className="muted-text shrink-0">Email</dt>
             <dd className="min-w-0 break-words text-right">{user.email}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-3">
+          <div className="flex justify-between gap-4 border-b border-[var(--border)] py-3">
             <dt className="muted-text shrink-0">Providers</dt>
             <dd className="min-w-0 text-right">{user.providers.join(", ")}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-3">
+          <div className="flex justify-between gap-4 border-b border-[var(--border)] py-3">
             <dt className="muted-text shrink-0">Seller access</dt>
             <dd className="min-w-0 text-right">{user.isTrustedSeller ? "Trusted seller" : "Not approved yet"}</dd>
           </div>
@@ -154,7 +154,7 @@ export function AccountPanel() {
                 {overview.wishlistedEvents.map((event) => (
                   <li
                     key={event.id}
-                    className="rounded-[var(--radius-md)] silver-border px-3 py-2"
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
                   >
                     <p>{event.title}</p>
                     <p className="muted-text text-xs">{event.city}</p>
@@ -173,7 +173,7 @@ export function AccountPanel() {
                 {overview.ticketRequestsSent.map((request) => (
                   <li
                     key={request.requestId}
-                    className="rounded-[var(--radius-md)] silver-border px-3 py-2"
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
                   >
                     <p>{request.eventTitle}</p>
                     <p className="muted-text text-xs">
@@ -194,7 +194,7 @@ export function AccountPanel() {
                 {overview.sellingEvents.map((event) => (
                   <li
                     key={event.listingId}
-                    className="rounded-[var(--radius-md)] silver-border px-3 py-2"
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
                   >
                     <p>{event.eventTitle}</p>
                     <p className="muted-text text-xs">
@@ -215,7 +215,7 @@ export function AccountPanel() {
                 {overview.ticketRequestsIncoming.map((request) => (
                   <li
                     key={request.requestId}
-                    className="rounded-[var(--radius-md)] silver-border px-3 py-2"
+                    className="rounded-[var(--radius-md)] border border-[var(--border)] px-3 py-2"
                   >
                     <p>{request.eventTitle}</p>
                     <p className="muted-text text-xs">

@@ -312,7 +312,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
           </Button>
           {isEditFormOpen ? (
             <form
-              className="grid gap-3 rounded-[var(--radius-md)] silver-border p-4"
+              className="grid gap-3 rounded-[var(--radius-md)] border border-[var(--border)] p-4"
               onSubmit={handleEditListing}
             >
               <h2 className="brand-heading text-base font-semibold">Edit listing</h2>
@@ -341,7 +341,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
                 <span className="muted-text">Event image</span>
                 <input
                   accept="image/*"
-                  className="h-11 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                  className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
                   disabled={isProcessingImage}
                   onChange={(event) => void handleEventImageUpload(event.target.files?.[0] ?? null)}
                   type="file"
@@ -351,7 +351,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
                 ) : null}
               </label>
               {eventImageUrl ? (
-                <div className="overflow-hidden rounded-[var(--radius-md)] silver-border">
+                <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
                   <img
                     alt={`${listing.eventTitle} event image preview`}
                     className="h-44 w-full object-cover"

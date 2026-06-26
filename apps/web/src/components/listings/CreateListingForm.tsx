@@ -343,7 +343,7 @@ export function CreateListingForm() {
             <span className="muted-text">Event image (optional)</span>
             <input
               accept="image/*"
-              className="h-11 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+              className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
               disabled={isProcessingImage}
               onChange={(event) => void handleEventImageUpload(event.target.files?.[0] ?? null)}
               type="file"
@@ -355,7 +355,7 @@ export function CreateListingForm() {
           </label>
         </div>
         {eventImageUrl ? (
-          <div className="overflow-hidden rounded-[var(--radius-md)] silver-border">
+          <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
             <img
               src={eventImageUrl}
               alt="Event upload preview"
@@ -396,7 +396,7 @@ export function CreateListingForm() {
           />
         </div>
         {eventSuggestions.length ? (
-          <div className="grid gap-1 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] p-2">
+          <div className="grid gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2">
             <p className="muted-text px-2 pt-1 text-xs uppercase tracking-[0.14em]">
               Selling now
             </p>
@@ -414,7 +414,7 @@ export function CreateListingForm() {
                   setEventDateTime(toDateTimeLocalValue(eventSuggestion.startAt));
                   setMarketPriceCents(eventSuggestion.currentPriceCents);
                 }}
-                className="min-h-11 rounded-[var(--radius-sm)] border border-transparent px-3 py-3 text-left transition hover-silver-border hover:bg-white/6 active:bg-white/8"
+                className="min-h-11 rounded-[var(--radius-sm)] border border-transparent px-3 py-3 text-left transition hover-border border-[var(--border)] hover:bg-white/6 active:bg-white/8"
               >
                 <p className="text-sm text-[var(--foreground)]">{eventSuggestion.title}</p>
                 <p className="muted-text text-xs">
@@ -432,7 +432,7 @@ export function CreateListingForm() {
           <select
             value={seatType}
             onChange={(event) => setSeatType(event.target.value as "GA" | "VIP" | "OTHER")}
-            className="h-11 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+            className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
           >
             <option value="GA">GA</option>
             <option value="VIP">VIP</option>

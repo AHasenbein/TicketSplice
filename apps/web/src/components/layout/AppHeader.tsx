@@ -111,7 +111,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[rgba(7,6,15,0.88)] pt-[env(safe-area-inset-top)] backdrop-blur-xl silver-border-b">
+    <header className="sticky top-0 z-40 bg-[rgba(7,6,15,0.88)] pt-[env(safe-area-inset-top)] backdrop-blur-xl border-b border-[var(--border)]">
       <div className="pointer-events-none absolute inset-x-0 top-[env(safe-area-inset-top)] h-px bg-[linear-gradient(90deg,transparent,rgba(255,46,168,0.55),rgba(34,211,255,0.55),transparent)]" />
       <div className="page-shell flex h-14 items-center justify-between sm:h-16">
         <Link
@@ -145,7 +145,7 @@ export function AppHeader() {
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-nav"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] silver-border bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition active:scale-95 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] md:hidden"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition active:scale-95 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] md:hidden"
                 onClick={() => setMobileMenuOpen((open) => !open)}
               >
                 <span aria-hidden="true" className="grid h-3 w-4 grid-rows-3 gap-[3px]">
@@ -174,7 +174,7 @@ export function AppHeader() {
                   aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                   aria-expanded={mobileMenuOpen}
                   aria-controls="mobile-nav"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] silver-border bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition active:scale-95 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] sm:hidden"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition active:scale-95 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] sm:hidden"
                   onClick={() => setMobileMenuOpen((open) => !open)}
                 >
                   <span aria-hidden="true" className="grid h-3 w-4 grid-rows-3 gap-[3px]">
@@ -203,7 +203,7 @@ export function AppHeader() {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
-            className="absolute inset-x-0 bottom-0 grid max-h-[min(85dvh,640px)] gap-3 overflow-y-auto rounded-t-[var(--radius-lg)] silver-border bg-[var(--surface)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-24px_60px_rgba(7,6,15,0.65)]"
+            className="absolute inset-x-0 bottom-0 grid max-h-[min(85dvh,640px)] gap-3 overflow-y-auto rounded-t-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-24px_60px_rgba(7,6,15,0.65)]"
           >
             <div className="mx-auto h-1 w-10 rounded-full bg-[var(--border)]" />
             {isAuthenticated ? (

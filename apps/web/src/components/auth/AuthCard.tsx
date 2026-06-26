@@ -141,7 +141,7 @@ export function AuthCard({ mode }: AuthCardProps) {
       <div className="grid gap-3">
         {isLoadingProviders ? (
           <div
-            className="h-11 w-full animate-pulse rounded-xl silver-border bg-white/5"
+            className="h-11 w-full animate-pulse rounded-xl border border-[var(--border)] bg-white/5"
             role="status"
             aria-live="polite"
             aria-label="Loading OAuth providers"
@@ -159,7 +159,7 @@ export function AuthCard({ mode }: AuthCardProps) {
         ) : null}
         {!isLoadingProviders && !googleEnabled ? (
           <p
-            className="muted-text rounded-xl silver-border bg-white/[0.03] px-3 py-2 text-center text-xs"
+            className="muted-text rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-center text-xs"
             role="status"
             aria-live="polite"
           >
@@ -169,9 +169,9 @@ export function AuthCard({ mode }: AuthCardProps) {
       </div>
 
       <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 silver-divider" />
+        <div className="h-px flex-1 bg-[var(--border)]" />
         <span className="muted-text text-xs uppercase tracking-[0.16em]">or use email</span>
-        <div className="h-px flex-1 silver-divider" />
+        <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
       <form className="grid gap-3.5" onSubmit={onSubmit}>
@@ -211,7 +211,7 @@ export function AuthCard({ mode }: AuthCardProps) {
               onChange={(event) => setConfirmPassword(event.target.value)}
               errorMessage={confirmPassword && !passwordsMatch ? "Passwords must match" : undefined}
             />
-            <div className="grid gap-1 rounded-xl silver-border bg-white/[0.03] px-3 py-2 text-xs">
+            <div className="grid gap-1 rounded-xl border border-[var(--border)] bg-white/[0.03] px-3 py-2 text-xs">
               <p className={hasMinLength ? "text-emerald-300" : "muted-text"}>
                 {hasMinLength ? "Met: at least 6 characters" : "Not met: at least 6 characters"}
               </p>
@@ -228,7 +228,7 @@ export function AuthCard({ mode }: AuthCardProps) {
             type="checkbox"
             checked={showPassword}
             onChange={(event) => setShowPassword(event.target.checked)}
-            className="size-5 shrink-0 rounded silver-border-glow bg-[var(--surface)]"
+            className="size-5 shrink-0 rounded border border-[var(--border)] bg-[var(--surface)]"
           />
           Show password
         </label>

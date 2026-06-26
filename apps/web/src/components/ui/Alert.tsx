@@ -11,7 +11,7 @@ interface AlertProps {
 const toneStyles: Record<AlertTone, string> = {
   error: "border-red-400/30 bg-red-400/10 text-red-100",
   success: "border-emerald-400/30 bg-emerald-400/10 text-emerald-100",
-  info: "silver-border bg-white/[0.03] text-[var(--foreground)]"
+  info: "border border-[var(--border)] bg-white/[0.03] text-[var(--foreground)]"
 };
 
 export function Alert({
