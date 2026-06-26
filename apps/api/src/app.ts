@@ -79,7 +79,8 @@ export function createApp() {
       }
     })
   );
-  app.use(express.json());
+  // Listing/event image uploads send base64 data URLs (up to ~2.7MB for a 2MB file).
+  app.use(express.json({ limit: "3mb" }));
 
   app.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
@@ -102,6 +103,18 @@ export function createApp() {
   app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     if (error instanceof HttpError) {
       res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    if (
+      error &&
+      typeof error === "object" &&
+      "type" in error &&
+      (error as { type?: string }).type === "entity.too.large"
+    ) {
+      res.status(413).json({
+        message: "Request body is too large. Use an image under 2MB."
+      });
       return;
     }
 

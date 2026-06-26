@@ -7,6 +7,7 @@ import type { Event } from "@/lib/api/events";
 import { addEventToWishlist, getCurrentUser } from "@/lib/api/auth";
 import type { Listing } from "@/lib/api/listings";
 import { getEvent, updateEvent, uploadEventImage } from "@/lib/api/events";
+import { EventImageError, prepareEventImageUpload } from "@/lib/images/prepare-event-image";
 import { ApiClientError } from "@/lib/api/client";
 import { listListings } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
@@ -36,6 +37,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingEvent, setIsSavingEvent] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [listingsErrorMessage, setListingsErrorMessage] = useState("");
   const [wishlistMessage, setWishlistMessage] = useState("");
@@ -177,34 +179,26 @@ export function EventDetail({ eventId }: EventDetailProps) {
     }
   }
 
-  function handleEditImageUpload(file: File | null) {
+  async function handleEditImageUpload(file: File | null) {
     if (!file) {
       setEditImageDataToUpload("");
       return;
     }
-    if (!file.type.startsWith("image/")) {
-      setErrorMessage("Please choose an image file.");
-      return;
+
+    setIsProcessingImage(true);
+    setErrorMessage("");
+    try {
+      const dataUrl = await prepareEventImageUpload(file);
+      setEditImageUrl(dataUrl);
+      setEditImageDataToUpload(dataUrl);
+    } catch (error) {
+      setEditImageDataToUpload("");
+      setErrorMessage(
+        error instanceof EventImageError ? error.message : "Could not process image."
+      );
+    } finally {
+      setIsProcessingImage(false);
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setErrorMessage("Image must be 2MB or smaller.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      if (!result.startsWith("data:image/")) {
-        setErrorMessage("Could not read image. Try another file.");
-        return;
-      }
-      setEditImageUrl(result);
-      setEditImageDataToUpload(result);
-      setErrorMessage("");
-    };
-    reader.onerror = () => {
-      setErrorMessage("Could not read image. Try another file.");
-    };
-    reader.readAsDataURL(file);
   }
 
   const shouldShowVenue = Boolean(event.venue?.trim()) && event.venue.trim() !== "TBD";
@@ -320,9 +314,15 @@ export function EventDetail({ eventId }: EventDetailProps) {
                   <input
                     accept="image/*"
                     className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
-                    onChange={(inputEvent) => handleEditImageUpload(inputEvent.target.files?.[0] ?? null)}
+                    disabled={isProcessingImage}
+                    onChange={(inputEvent) =>
+                      void handleEditImageUpload(inputEvent.target.files?.[0] ?? null)
+                    }
                     type="file"
                   />
+                  {isProcessingImage ? (
+                    <span className="text-xs muted-text">Resizing image...</span>
+                  ) : null}
                 </label>
                 {editImageUrl ? (
                   <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">

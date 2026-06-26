@@ -7,6 +7,7 @@ import type { AuthUser } from "@/lib/api/auth";
 import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { uploadEventImage } from "@/lib/api/events";
+import { EventImageError, prepareEventImageUpload } from "@/lib/images/prepare-event-image";
 import { createListing, listMarketEventSuggestions } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
 import { Alert } from "../ui/Alert";
@@ -74,6 +75,7 @@ export function CreateListingForm() {
   const [eventDateTimeError, setEventDateTimeError] = useState("");
   const [eventImageError, setEventImageError] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -253,36 +255,29 @@ export function CreateListingForm() {
     }
   }
 
-  function handleEventImageUpload(file: File | null) {
+  async function handleEventImageUpload(file: File | null) {
     if (!file) {
       setEventImageUrl("");
       setEventImageDataToUpload("");
       setEventImageError("");
       return;
     }
-    if (!file.type.startsWith("image/")) {
-      setEventImageError("Please choose an image file.");
-      return;
+
+    setIsProcessingImage(true);
+    setEventImageError("");
+    try {
+      const dataUrl = await prepareEventImageUpload(file);
+      setEventImageUrl(dataUrl);
+      setEventImageDataToUpload(dataUrl);
+    } catch (error) {
+      setEventImageUrl("");
+      setEventImageDataToUpload("");
+      setEventImageError(
+        error instanceof EventImageError ? error.message : "Could not process image."
+      );
+    } finally {
+      setIsProcessingImage(false);
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setEventImageError("Image must be 2MB or smaller.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      if (!result.startsWith("data:image/")) {
-        setEventImageError("Could not read image. Try another file.");
-        return;
-      }
-      setEventImageUrl(result);
-      setEventImageDataToUpload(result);
-      setEventImageError("");
-    };
-    reader.onerror = () => {
-      setEventImageError("Could not read image. Try another file.");
-    };
-    reader.readAsDataURL(file);
   }
 
   return (
@@ -348,9 +343,13 @@ export function CreateListingForm() {
             <input
               accept="image/*"
               className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
-              onChange={(event) => handleEventImageUpload(event.target.files?.[0] ?? null)}
+              disabled={isProcessingImage}
+              onChange={(event) => void handleEventImageUpload(event.target.files?.[0] ?? null)}
               type="file"
             />
+            {isProcessingImage ? (
+              <span className="text-xs muted-text">Resizing image...</span>
+            ) : null}
             {eventImageError ? <span className="text-xs text-danger">{eventImageError}</span> : null}
           </label>
         </div>
