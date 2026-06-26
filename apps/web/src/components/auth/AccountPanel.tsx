@@ -126,21 +126,21 @@ export function AccountPanel() {
 
       {user ? (
         <dl className="mt-6 grid gap-3 text-sm">
-          <div className="flex justify-between gap-4 silver-border-b py-2">
-            <dt className="muted-text">Name</dt>
-            <dd>{user.displayName}</dd>
+          <div className="flex justify-between gap-4 silver-border-b py-3">
+            <dt className="muted-text shrink-0">Name</dt>
+            <dd className="min-w-0 text-right">{user.displayName}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-2">
-            <dt className="muted-text">Email</dt>
-            <dd>{user.email}</dd>
+          <div className="flex justify-between gap-4 silver-border-b py-3">
+            <dt className="muted-text shrink-0">Email</dt>
+            <dd className="min-w-0 break-words text-right">{user.email}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-2">
-            <dt className="muted-text">Providers</dt>
-            <dd>{user.providers.join(", ")}</dd>
+          <div className="flex justify-between gap-4 silver-border-b py-3">
+            <dt className="muted-text shrink-0">Providers</dt>
+            <dd className="min-w-0 text-right">{user.providers.join(", ")}</dd>
           </div>
-          <div className="flex justify-between gap-4 silver-border-b py-2">
-            <dt className="muted-text">Seller access</dt>
-            <dd>{user.isTrustedSeller ? "Trusted seller" : "Not approved yet"}</dd>
+          <div className="flex justify-between gap-4 silver-border-b py-3">
+            <dt className="muted-text shrink-0">Seller access</dt>
+            <dd className="min-w-0 text-right">{user.isTrustedSeller ? "Trusted seller" : "Not approved yet"}</dd>
           </div>
         </dl>
       ) : null}
@@ -231,7 +231,7 @@ export function AccountPanel() {
         </div>
       ) : null}
 
-      <div className="mt-6 flex items-center gap-2">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Button
           variant="ghost"
           onClick={() => {

@@ -248,11 +248,15 @@ export function EventDetail({ eventId }: EventDetailProps) {
             ) : null}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 pt-1">
-          <ButtonLink href="/listings/new">Trusted sellers: list this event</ButtonLink>
+        <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
+          <ButtonLink href="/listings/new" className="w-full sm:w-auto">
+            <span className="sm:hidden">List this event</span>
+            <span className="hidden sm:inline">Trusted sellers: list this event</span>
+          </ButtonLink>
           <Button
             variant="secondary"
             type="button"
+            className="w-full sm:w-auto"
             onClick={async () => {
               const token = readAuthToken();
               if (!token) {

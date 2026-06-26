@@ -104,7 +104,7 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-y-0 right-0 z-[5] w-16 bg-[linear-gradient(270deg,rgba(7,6,15,0.95),transparent)]" />
       </div>
 
-      <div className="page-shell flex flex-1 flex-col gap-12 py-8 sm:gap-20 sm:py-16">
+      <div className="page-shell flex flex-1 flex-col gap-10 py-6 sm:gap-20 sm:py-16">
         <section className="neon-sweep relative grid gap-6 overflow-hidden rounded-[var(--radius-lg)] silver-border-glow bg-[linear-gradient(150deg,rgba(24,18,48,0.7),rgba(10,8,22,0.85))] p-5 sm:gap-8 sm:p-12">
           <div className="float-slow pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full bg-[rgba(255,46,168,0.35)] blur-3xl" />
           <div className="float-slow-alt pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-[rgba(34,211,255,0.28)] blur-3xl" />
@@ -126,33 +126,36 @@ export default function Home() {
               community, and get tickets in minutes — backed by trusted sellers, verified accounts,
               and made by people who actually go to events.
             </p>
-            <div className="fade-in-up delay-4 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/events">Browse events</ButtonLink>
-              <ButtonLink href="/auth/register" variant="secondary">
+            <div className="fade-in-up delay-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <ButtonLink href="/events" className="w-full sm:w-auto">
+                Browse events
+              </ButtonLink>
+              <ButtonLink href="/auth/register" variant="secondary" className="w-full sm:w-auto">
                 Create an account
               </ButtonLink>
-              <ButtonLink href="/listings/new" variant="ghost">
-                Trusted sellers: list tickets
+              <ButtonLink href="/listings/new" variant="ghost" className="w-full sm:w-auto">
+                <span className="sm:hidden">List tickets</span>
+                <span className="hidden sm:inline">Trusted sellers: list tickets</span>
               </ButtonLink>
             </div>
-            <dl className="fade-in-up delay-5 mt-2 grid max-w-2xl grid-cols-3 gap-3 silver-border-t pt-5 sm:mt-4 sm:gap-6 sm:pt-6">
+            <dl className="fade-in-up delay-5 mt-2 grid max-w-2xl grid-cols-1 gap-4 silver-border-t pt-5 sm:mt-4 sm:grid-cols-3 sm:gap-6 sm:pt-6">
               <div>
-                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-blue-soft)] sm:text-[10px] sm:tracking-[0.22em]">
+                <dt className="text-xs uppercase tracking-[0.16em] text-[var(--neon-blue-soft)] sm:tracking-[0.22em]">
                   Verified sellers
                 </dt>
-                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">100%</dd>
+                <dd className="brand-heading mt-1.5 text-2xl font-semibold text-white sm:mt-2">100%</dd>
               </div>
               <div>
-                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-pink-soft)] sm:text-[10px] sm:tracking-[0.22em]">
+                <dt className="text-xs uppercase tracking-[0.16em] text-[var(--neon-pink-soft)] sm:tracking-[0.22em]">
                   Total fees charged
                 </dt>
-                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">$0.00</dd>
+                <dd className="brand-heading mt-1.5 text-2xl font-semibold text-white sm:mt-2">$0.00</dd>
               </div>
               <div>
-                <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--silver)] sm:text-[10px] sm:tracking-[0.22em]">
+                <dt className="text-xs uppercase tracking-[0.16em] text-[var(--silver)] sm:tracking-[0.22em]">
                   Cities live
                 </dt>
-                <dd className="brand-heading mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">24+</dd>
+                <dd className="brand-heading mt-1.5 text-2xl font-semibold text-white sm:mt-2">24+</dd>
               </div>
             </dl>
           </div>
@@ -267,7 +270,7 @@ export default function Home() {
               it sleek, secure, and electric.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <ButtonLink href="/events">Browse events</ButtonLink>
             <ButtonLink href="/auth/register" variant="secondary">
               Join free

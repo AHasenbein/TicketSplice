@@ -98,6 +98,12 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+@media (max-width: 639px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
 input,
 textarea,
 select {
@@ -115,6 +121,7 @@ select {
 a,
 button {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 details > summary {
@@ -138,12 +145,14 @@ a {
 .page-shell {
   width: min(1180px, 94vw);
   margin: 0 auto;
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
 .section-shell {
   width: min(1180px, 94vw);
   margin: 0 auto;
   padding-block: clamp(2rem, 4vw, 5rem);
+  padding-bottom: max(clamp(2rem, 4vw, 5rem), env(safe-area-inset-bottom));
 }
 
 @media (min-width: 640px) {
@@ -225,7 +234,7 @@ a {
   position: relative;
   border: 1px solid transparent;
   background: rgba(168, 178, 192, 0.1);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--silver);

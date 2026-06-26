@@ -256,7 +256,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
         <span className="muted-text">/</span>
         <span className="muted-text">Listing details</span>
       </nav>
-      <h1 className="brand-heading text-3xl font-semibold">{listing.title}</h1>
+      <h1 className="brand-heading text-2xl font-semibold sm:text-3xl">{listing.title}</h1>
       <p className="muted-text text-sm">
         For event:{" "}
         <Link
@@ -392,7 +392,7 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
       ) : null}
       {message ? <Alert tone="success">{message}</Alert> : null}
       {message ? (
-        <ButtonLink href="/listings/mine" variant="secondary" className="h-9 px-3">
+        <ButtonLink href="/listings/mine" variant="secondary" className="w-full sm:w-auto">
           Return to my listings
         </ButtonLink>
       ) : null}

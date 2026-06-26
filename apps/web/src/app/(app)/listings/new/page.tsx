@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function NewListingPage() {
   return (
-    <section className="page-shell flex flex-1 flex-col py-8 sm:py-12">
+    <section className="page-shell flex flex-1 flex-col py-6 sm:py-12">
       <CreateListingForm />
     </section>
   );

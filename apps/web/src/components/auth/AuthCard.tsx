@@ -223,12 +223,12 @@ export function AuthCard({ mode }: AuthCardProps) {
             </div>
           </>
         ) : null}
-        <label className="flex items-center gap-2 text-xs muted-text">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm muted-text">
           <input
             type="checkbox"
             checked={showPassword}
             onChange={(event) => setShowPassword(event.target.checked)}
-            className="size-5 rounded silver-border-glow bg-[var(--surface)]"
+            className="size-5 shrink-0 rounded silver-border-glow bg-[var(--surface)]"
           />
           Show password
         </label>
@@ -256,7 +256,7 @@ export function AuthCard({ mode }: AuthCardProps) {
             Already signed up but not verified?{" "}
             <button
               type="button"
-              className="font-medium text-[var(--foreground)] underline underline-offset-4 disabled:opacity-60"
+              className="min-h-11 w-full py-2 font-medium text-[var(--foreground)] underline underline-offset-4 disabled:opacity-60 sm:w-auto sm:py-0"
               onClick={async () => {
                 setErrorMessage("");
                 setSuccessMessage("");

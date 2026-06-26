@@ -414,7 +414,7 @@ export function CreateListingForm() {
                   setEventDateTime(toDateTimeLocalValue(eventSuggestion.startAt));
                   setMarketPriceCents(eventSuggestion.currentPriceCents);
                 }}
-                className="rounded-[var(--radius-sm)] border border-transparent px-3 py-2 text-left transition hover-silver-border hover:bg-white/6"
+                className="min-h-11 rounded-[var(--radius-sm)] border border-transparent px-3 py-3 text-left transition hover-silver-border hover:bg-white/6 active:bg-white/8"
               >
                 <p className="text-sm text-[var(--foreground)]">{eventSuggestion.title}</p>
                 <p className="muted-text text-xs">

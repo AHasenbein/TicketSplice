@@ -38,7 +38,7 @@ export function OAuthCallbackClient() {
             Signing you in...
           </p>
           {isRedirectSlow ? (
-            <ButtonLink href={returnTo || "/dashboard"} variant="secondary" className="h-9 px-3">
+            <ButtonLink href={returnTo || "/dashboard"} variant="secondary" className="w-full sm:w-auto">
               Continue
             </ButtonLink>
           ) : null}

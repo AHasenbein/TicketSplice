@@ -22,7 +22,7 @@ export function EventsCarousel({
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +60,7 @@ export function EventsCarousel({
   }, []);
 
   useEffect(() => {
-    if (isHovered || !events.length || autoAdvanceMs <= 0) {
+    if (isPaused || !events.length || autoAdvanceMs <= 0) {
       return;
     }
     const interval = window.setInterval(() => {
@@ -74,16 +74,22 @@ export function EventsCarousel({
       }
     }, autoAdvanceMs);
     return () => window.clearInterval(interval);
-  }, [autoAdvanceMs, events.length, isHovered, scrollByCards]);
+  }, [autoAdvanceMs, events.length, isPaused, scrollByCards]);
+
+  const pauseCarousel = useCallback(() => setIsPaused(true), []);
+  const resumeCarousel = useCallback(() => setIsPaused(false), []);
 
   return (
     <section
       className="grid gap-4"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={pauseCarousel}
+      onMouseLeave={resumeCarousel}
+      onTouchStart={pauseCarousel}
+      onTouchEnd={resumeCarousel}
+      onTouchCancel={resumeCarousel}
     >
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <span className="brand-pill">
             <span className="dot" />
             Featured tonight
@@ -96,7 +102,7 @@ export function EventsCarousel({
             type="button"
             aria-label="Scroll previous"
             onClick={() => scrollByCards(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full silver-border bg-[rgba(232,235,243,0.06)] text-[var(--silver)] transition hover:border-[rgba(34,211,255,0.55)] hover:bg-[rgba(34,211,255,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(34,211,255,0.45)]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full silver-border bg-[rgba(232,235,243,0.06)] text-lg text-[var(--silver)] transition active:scale-95 hover:border-[rgba(34,211,255,0.55)] hover:bg-[rgba(34,211,255,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(34,211,255,0.45)]"
           >
             <span aria-hidden="true">‹</span>
           </button>
@@ -104,7 +110,7 @@ export function EventsCarousel({
             type="button"
             aria-label="Scroll next"
             onClick={() => scrollByCards(1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full silver-border bg-[rgba(232,235,243,0.06)] text-[var(--silver)] transition hover:border-[rgba(255,46,168,0.55)] hover:bg-[rgba(255,46,168,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(255,46,168,0.45)]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full silver-border bg-[rgba(232,235,243,0.06)] text-lg text-[var(--silver)] transition active:scale-95 hover:border-[rgba(255,46,168,0.55)] hover:bg-[rgba(255,46,168,0.1)] hover:text-white hover:shadow-[0_0_18px_rgba(255,46,168,0.45)]"
           >
             <span aria-hidden="true">›</span>
           </button>
@@ -112,11 +118,11 @@ export function EventsCarousel({
       </header>
 
       {isLoading ? (
-        <div className="scrollbar-none flex gap-4 overflow-hidden">
+        <div className="scrollbar-none -mx-[3vw] flex gap-4 overflow-hidden px-[3vw] sm:mx-0 sm:px-0">
           {Array.from({ length: 4 }).map((_unused, index) => (
             <div
               key={index}
-              className="h-72 w-[260px] shrink-0 animate-pulse rounded-[var(--radius-lg)] silver-border bg-[rgba(232,235,243,0.06)]"
+              className="h-72 w-[min(280px,85vw)] shrink-0 animate-pulse rounded-[var(--radius-lg)] silver-border bg-[rgba(232,235,243,0.06)]"
             />
           ))}
         </div>
@@ -133,7 +139,7 @@ export function EventsCarousel({
       {!isLoading && events.length ? (
         <div
           ref={trackRef}
-          className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2"
+          className="scrollbar-none -mx-[3vw] flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[3vw] pb-2 sm:mx-0 sm:px-0"
         >
           {events.map((event) => {
             const startDate = new Date(event.startAt);
@@ -150,7 +156,7 @@ export function EventsCarousel({
                 key={event.id}
                 data-carousel-card
                 href={`/events/${event.id}`}
-                className="group relative w-[260px] shrink-0 snap-start overflow-hidden rounded-[var(--radius-lg)] silver-border bg-[linear-gradient(160deg,rgba(24,18,48,0.85),rgba(14,10,28,0.95))] transition hover:-translate-y-0.5 hover:border-[rgba(255,46,168,0.55)] hover:shadow-[0_18px_46px_rgba(255,46,168,0.28),0_0_0_1px_rgba(34,211,255,0.25)] sm:w-[280px]"
+                className="group relative w-[min(280px,85vw)] shrink-0 snap-start overflow-hidden rounded-[var(--radius-lg)] silver-border bg-[linear-gradient(160deg,rgba(24,18,48,0.85),rgba(14,10,28,0.95))] transition active:scale-[0.99] hover:-translate-y-0.5 hover:border-[rgba(255,46,168,0.55)] hover:shadow-[0_18px_46px_rgba(255,46,168,0.28),0_0_0_1px_rgba(34,211,255,0.25)]"
               >
                 <div className="relative aspect-[5/4] w-full overflow-hidden">
                   {event.imageUrl ? (
@@ -163,12 +169,12 @@ export function EventsCarousel({
                     <div className="h-full w-full bg-[linear-gradient(135deg,rgba(255,46,168,0.3),rgba(34,211,255,0.25))]" />
                   )}
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,6,15,0)_45%,rgba(7,6,15,0.85)_100%)]" />
-                  <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full silver-border bg-[rgba(7,6,15,0.6)] px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--silver)] backdrop-blur">
+                  <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full silver-border bg-[rgba(7,6,15,0.6)] px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--silver)] backdrop-blur">
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--neon-pink)] shadow-[0_0_8px_rgba(255,46,168,0.9)]" />
                     {event.city}
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 grid gap-1">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--neon-blue-soft)]">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--neon-blue-soft)]">
                       {dateLabel} · {timeLabel}
                     </p>
                     <h3 className="brand-heading line-clamp-2 text-lg font-semibold leading-tight text-white">

@@ -77,16 +77,16 @@ export function DashboardPanel() {
               You are signed in and ready to browse events and manage your marketplace activity.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <ButtonLink href="/events" variant="secondary">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <ButtonLink href="/events" variant="secondary" className="w-full sm:w-auto">
               Browse events
             </ButtonLink>
             {user?.isTrustedSeller ? (
-              <ButtonLink href="/listings/new" variant="ghost">
+              <ButtonLink href="/listings/new" variant="ghost" className="w-full sm:w-auto">
                 Sell tickets
               </ButtonLink>
             ) : null}
-            <ButtonLink href="/account" variant="ghost">
+            <ButtonLink href="/account" variant="ghost" className="w-full sm:w-auto">
               My account
             </ButtonLink>
           </div>
@@ -122,7 +122,7 @@ export function DashboardPanel() {
               : "Ask support to add your email to trusted seller accounts."}
           </p>
           {user?.isTrustedSeller ? (
-            <ButtonLink href="/listings/new" variant="ghost" className="mt-3 h-9 px-3">
+            <ButtonLink href="/listings/new" variant="ghost" className="mt-3 w-full sm:w-auto">
               Create listing
             </ButtonLink>
           ) : null}

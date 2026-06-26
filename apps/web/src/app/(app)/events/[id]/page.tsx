@@ -14,7 +14,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const { id } = await params;
 
   return (
-    <section className="page-shell flex flex-1 flex-col py-8 sm:py-12">
+    <section className="page-shell flex flex-1 flex-col py-6 sm:py-12">
       <EventDetail eventId={id} />
     </section>
   );

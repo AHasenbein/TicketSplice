@@ -17,18 +17,27 @@ export function EventCard({
   isWishlistUpdating = false,
   onToggleWishlist
 }: EventCardProps) {
-  const date = new Date(event.startAt).toLocaleString();
+  const startDate = new Date(event.startAt);
+  const dateLabel = startDate.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric"
+  });
+  const timeLabel = startDate.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit"
+  });
   const shouldShowVenue = Boolean(event.venue?.trim()) && event.venue.trim() !== "TBD";
 
   return (
     <SurfaceCard
-      className="relative aspect-square overflow-hidden p-2.5 transition hover:-translate-y-0.5 hover:border-[rgba(255,46,168,0.55)] hover:shadow-[0_18px_38px_rgba(255,46,168,0.22),0_0_0_1px_rgba(34,211,255,0.22)]"
+      className="relative aspect-[4/5] overflow-hidden p-2.5 transition active:scale-[0.99] sm:aspect-square hover:-translate-y-0.5 hover:border-[rgba(255,46,168,0.55)] hover:shadow-[0_18px_38px_rgba(255,46,168,0.22),0_0_0_1px_rgba(34,211,255,0.22)]"
       elevated={false}
     >
       {onToggleWishlist ? (
         <button
           type="button"
-          className="absolute right-2.5 top-2.5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full silver-border bg-[var(--surface)] text-base transition hover:bg-white/10 disabled:opacity-60"
+          className="absolute right-2.5 top-2.5 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full silver-border bg-[var(--surface)] text-base transition active:scale-95 hover:bg-white/10 disabled:opacity-60"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(eventClick) => {
             eventClick.preventDefault();
@@ -61,7 +70,9 @@ export function EventCard({
           {shouldShowVenue ? (
             <p className="muted-text line-clamp-1 text-sm">{event.venue}</p>
           ) : null}
-          <p className="line-clamp-1 text-sm text-white/85">{date}</p>
+          <p className="line-clamp-1 text-sm text-white/85">
+            {dateLabel} · {timeLabel}
+          </p>
         </div>
       </Link>
     </SurfaceCard>

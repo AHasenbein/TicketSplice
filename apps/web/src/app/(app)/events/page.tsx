@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function EventsPage() {
   return (
-    <section className="page-shell flex flex-1 flex-col gap-6 py-8 sm:py-12">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section className="page-shell flex flex-1 flex-col gap-6 py-6 sm:py-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="muted-text text-xs uppercase tracking-[0.18em]">marketplace</p>
           <h1 className="brand-heading mt-2 text-2xl font-semibold sm:text-3xl">Listed events</h1>
@@ -18,9 +18,12 @@ export default function EventsPage() {
             Browse only events with active listings.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/listings/new">Trusted sellers: list tickets</ButtonLink>
-          <ButtonLink href="/listings/mine" variant="secondary">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+          <ButtonLink href="/listings/new" className="w-full sm:w-auto">
+            <span className="sm:hidden">List tickets</span>
+            <span className="hidden sm:inline">Trusted sellers: list tickets</span>
+          </ButtonLink>
+          <ButtonLink href="/listings/mine" variant="secondary" className="w-full sm:w-auto">
             My listings
           </ButtonLink>
         </div>
