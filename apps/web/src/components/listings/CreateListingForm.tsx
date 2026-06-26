@@ -145,9 +145,10 @@ export function CreateListingForm() {
             setEventId(exactMatch.eventId);
             setEventVenue(exactMatch.venue);
             setEventCity(exactMatch.city);
-            setEventImageUrl(exactMatch.imageUrl ?? "");
-            setEventImageDataToUpload("");
             setEventDateTime(toDateTimeLocalValue(exactMatch.startAt));
+            if (!eventImageDataToUpload) {
+              setEventImageUrl(exactMatch.imageUrl ?? "");
+            }
           } else {
             setEventId(undefined);
           }

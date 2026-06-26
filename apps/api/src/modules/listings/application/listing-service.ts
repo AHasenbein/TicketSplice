@@ -71,7 +71,7 @@ export class ListingService {
   ) {}
 
   async createListing(input: CreateListingInput): Promise<ListingResponse> {
-    const event = input.eventId
+    let event = input.eventId
       ? await this.eventService.getEventById(input.eventId)
       : await this.eventService.findOrCreateEventForListing({
           title: input.eventTitle ?? "",
@@ -82,6 +82,15 @@ export class ListingService {
           sellerId: input.sellerId,
           imageUrl: input.eventImageUrl
         });
+
+    const eventImageUrl = input.eventImageUrl?.trim();
+    if (eventImageUrl && event.imageUrl !== eventImageUrl) {
+      event = await this.eventService.updateEvent({
+        eventId: event.id,
+        imageUrl: eventImageUrl
+      });
+    }
+
     const now = new Date();
     const listing: Listing = {
       id: crypto.randomUUID(),
