@@ -31,7 +31,7 @@ export function Input({
         aria-invalid={hasError}
         aria-describedby={describedBy || undefined}
         className={`h-11 rounded-[var(--radius-md)] border bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition focus:border-[rgba(34,211,255,0.6)] focus:ring-2 focus:ring-[var(--ring-blue)] ${
-          hasError ? "border-red-400/50" : "border-[var(--border)]"
+          hasError ? "border-red-400/50" : "silver-border"
         } ${className}`}
         {...props}
       />

@@ -61,7 +61,7 @@ export function AppHeader() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(7,6,15,0.78)] backdrop-blur-xl">
+    <header className="sticky top-0 z-30 silver-border-b bg-[rgba(7,6,15,0.78)] backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,46,168,0.55),rgba(34,211,255,0.55),transparent)]" />
       <div className="page-shell flex h-16 items-center justify-between">
         <Link
@@ -123,7 +123,7 @@ export function AppHeader() {
               <details ref={mobileMenuRef} className="relative md:hidden">
                 <summary
                   aria-label="Open menu"
-                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-pink)]"
+                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--radius-md)] silver-border bg-[rgba(232,235,243,0.06)] text-[var(--foreground)] transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-pink)]"
                 >
                   <span aria-hidden="true" className="grid h-3 w-4 grid-rows-3 gap-[3px]">
                     <span className="h-px w-full rounded bg-current" />
@@ -131,7 +131,7 @@ export function AppHeader() {
                     <span className="h-px w-full rounded bg-current" />
                   </span>
                 </summary>
-                <div className="absolute right-0 z-20 mt-2 grid min-w-48 gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
+                <div className="absolute right-0 z-20 mt-2 grid min-w-48 gap-1 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] p-2 shadow-lg">
                   {[...authedPrimaryItems, ...authedSecondaryItems].map((item) => {
                     const active = isActive(item.href);
                     return (

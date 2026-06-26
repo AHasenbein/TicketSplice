@@ -28,7 +28,7 @@ export function EventCard({
       {onToggleWishlist ? (
         <button
           type="button"
-          className="absolute right-2.5 top-2.5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-base transition hover:bg-white/10 disabled:opacity-60"
+          className="absolute right-2.5 top-2.5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full silver-border bg-[var(--surface)] text-base transition hover:bg-white/10 disabled:opacity-60"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(eventClick) => {
             eventClick.preventDefault();
@@ -44,7 +44,7 @@ export function EventCard({
         href={`/events/${event.id}`}
         className="group grid h-full grid-rows-[minmax(0,1fr)_auto] gap-2 rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       >
-        <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+        <div className="overflow-hidden rounded-[var(--radius-md)] silver-border">
           {event.imageUrl ? (
             <img
               alt={`${event.title} event image`}

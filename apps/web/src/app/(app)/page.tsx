@@ -90,7 +90,7 @@ export default function Home() {
     <section className="flex flex-1 flex-col">
       <div
         aria-hidden="true"
-        className="relative w-full overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(90deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18),rgba(255,46,168,0.18))] animated-gradient"
+        className="relative w-full overflow-hidden silver-border-b bg-[linear-gradient(90deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18),rgba(255,46,168,0.18))] animated-gradient"
       >
         <div className="marquee-fast flex w-max gap-10 whitespace-nowrap py-2.5 text-sm font-semibold tracking-wide text-white">
           {[...announcementItems, ...announcementItems].map((item, index) => (
@@ -105,7 +105,7 @@ export default function Home() {
       </div>
 
       <div className="page-shell flex flex-1 flex-col gap-12 py-8 sm:gap-20 sm:py-16">
-        <section className="neon-sweep relative grid gap-6 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(150deg,rgba(24,18,48,0.7),rgba(10,8,22,0.85))] p-5 sm:gap-8 sm:p-12">
+        <section className="neon-sweep relative grid gap-6 overflow-hidden rounded-[var(--radius-lg)] silver-border-glow bg-[linear-gradient(150deg,rgba(24,18,48,0.7),rgba(10,8,22,0.85))] p-5 sm:gap-8 sm:p-12">
           <div className="float-slow pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full bg-[rgba(255,46,168,0.35)] blur-3xl" />
           <div className="float-slow-alt pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-[rgba(34,211,255,0.28)] blur-3xl" />
           <div className="relative grid gap-6">
@@ -135,7 +135,7 @@ export default function Home() {
                 Trusted sellers: list tickets
               </ButtonLink>
             </div>
-            <dl className="fade-in-up delay-5 mt-2 grid max-w-2xl grid-cols-3 gap-3 border-t border-[var(--border)] pt-5 sm:mt-4 sm:gap-6 sm:pt-6">
+            <dl className="fade-in-up delay-5 mt-2 grid max-w-2xl grid-cols-3 gap-3 silver-border-t pt-5 sm:mt-4 sm:gap-6 sm:pt-6">
               <div>
                 <dt className="text-[9px] uppercase tracking-[0.18em] text-[var(--neon-blue-soft)] sm:text-[10px] sm:tracking-[0.22em]">
                   Verified sellers
@@ -160,7 +160,7 @@ export default function Home() {
 
         <section
           aria-hidden="true"
-          className="relative overflow-hidden rounded-full border border-[var(--border)] bg-[rgba(232,235,243,0.06)] py-3"
+          className="relative overflow-hidden rounded-full silver-border bg-[rgba(232,235,243,0.06)] py-3"
         >
           <div className="marquee-track flex w-max gap-10 whitespace-nowrap px-6 text-xs uppercase tracking-[0.32em] text-[var(--silver)]">
             {[...tickerItems, ...tickerItems].map((item, index) => (
@@ -250,7 +250,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[linear-gradient(120deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18))] p-6 sm:p-12">
+      <section className="relative overflow-hidden rounded-[var(--radius-lg)] silver-border bg-[linear-gradient(120deg,rgba(255,46,168,0.18),rgba(34,211,255,0.18))] p-6 sm:p-12">
         <div className="pointer-events-none absolute -top-24 right-12 h-64 w-64 rounded-full bg-[rgba(255,46,168,0.35)] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 left-12 h-64 w-64 rounded-full bg-[rgba(34,211,255,0.35)] blur-3xl" />
         <div className="relative grid items-center gap-5 md:grid-cols-[1fr_auto]">

@@ -217,7 +217,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
       </nav>
       <SurfaceCard className="grid gap-4 p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <div className="aspect-square w-full max-w-[14rem] shrink-0 self-start overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)] sm:w-56">
+          <div className="aspect-square w-full max-w-[14rem] shrink-0 self-start overflow-hidden rounded-[var(--radius-md)] silver-border sm:w-56">
             {event.imageUrl ? (
               <img
                 alt={`${event.title} event image`}
@@ -284,7 +284,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
             </Button>
             {isEditFormOpen ? (
               <form
-                className="grid gap-3 rounded-[var(--radius-md)] border border-[var(--border)] p-4"
+                className="grid gap-3 rounded-[var(--radius-md)] silver-border p-4"
                 onSubmit={handleEditEvent}
               >
                 <h2 className="brand-heading text-base font-semibold">Edit event</h2>
@@ -313,7 +313,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
                   <span className="muted-text">Event image</span>
                   <input
                     accept="image/*"
-                    className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
+                    className="h-11 rounded-[var(--radius-md)] silver-border bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
                     disabled={isProcessingImage}
                     onChange={(inputEvent) =>
                       void handleEditImageUpload(inputEvent.target.files?.[0] ?? null)
@@ -325,7 +325,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
                   ) : null}
                 </label>
                 {editImageUrl ? (
-                  <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+                  <div className="overflow-hidden rounded-[var(--radius-md)] silver-border">
                     <img
                       alt={`${event.title} event image preview`}
                       className="h-44 w-full object-cover"
