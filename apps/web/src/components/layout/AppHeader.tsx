@@ -147,16 +147,18 @@ export function AppHeader({ onAuthChange }: AppHeaderProps) {
                 <span>Home</span>
               </Link>
             ) : null}
-            <Link
-              href="/"
-              className="brand-heading group flex min-h-11 shrink-0 items-center gap-2 text-base font-semibold tracking-tight"
-            >
-              <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-md bg-[linear-gradient(135deg,var(--neon-pink),var(--neon-blue))] shadow-[0_0_14px_rgba(255,46,168,0.5)]">
-                <span className="absolute inset-0.5 rounded-[5px] bg-[rgba(7,6,15,0.85)]" />
-                <span className="relative text-[10px] font-bold tracking-[0.05em] text-white">MT</span>
-              </span>
-              <span className="brand-gradient-text">Tix</span>
-            </Link>
+            {!isEvents ? (
+              <Link
+                href="/"
+                className="brand-heading group flex min-h-11 shrink-0 items-center gap-2 text-base font-semibold tracking-tight"
+              >
+                <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-md bg-[linear-gradient(135deg,var(--neon-pink),var(--neon-blue))] shadow-[0_0_14px_rgba(255,46,168,0.5)]">
+                  <span className="absolute inset-0.5 rounded-[5px] bg-[rgba(7,6,15,0.85)]" />
+                  <span className="relative text-[10px] font-bold tracking-[0.05em] text-white">MT</span>
+                </span>
+                <span className="brand-gradient-text">Tix</span>
+              </Link>
+            ) : null}
           </div>
 
           <nav className="flex min-w-0 items-center gap-1.5">
