@@ -92,9 +92,9 @@ export function AppHeader({ onAuthChange }: AppHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[rgba(7,6,15,0.88)] pt-[calc(env(safe-area-inset-top)+0.625rem)] backdrop-blur-xl md:pt-[env(safe-area-inset-top)]">
-      <div className="pointer-events-none absolute inset-x-0 top-[calc(env(safe-area-inset-top)+0.625rem)] h-px bg-[linear-gradient(90deg,transparent,rgba(255,46,168,0.55),rgba(34,211,255,0.55),transparent)] md:top-[env(safe-area-inset-top)]" />
-      <div className="page-shell flex min-h-[4.25rem] items-center justify-between gap-2 py-2.5 sm:min-h-16 sm:py-3">
+    <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[rgba(7,6,15,0.88)] pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-[env(safe-area-inset-top)] h-px bg-[linear-gradient(90deg,transparent,rgba(255,46,168,0.55),rgba(34,211,255,0.55),transparent)]" />
+      <div className="mx-auto flex w-[min(1180px,94vw)] min-h-16 items-center justify-between gap-2 px-[3vw] py-3 max-md:pt-5 max-md:pb-3 sm:w-[min(1180px,92vw)] sm:px-0">
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">
           {!isHome ? (
             <Link
