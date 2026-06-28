@@ -116,6 +116,7 @@ export function AppHeader({
   }, [mobileMenuOpen, onMobileMenuOpenChange]);
 
   const isAuthRoute = pathname.startsWith("/auth");
+  const isHome = pathname === "/";
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const isEvents = isActive("/events");
 
@@ -174,6 +175,14 @@ export function AppHeader({
           {isAuthenticated ? (
             <>
               <p className="muted-text px-1 text-xs uppercase tracking-[0.18em]">Menu</p>
+              <ButtonLink
+                href="/"
+                variant={isHome ? "secondary" : "ghost"}
+                className="w-full justify-start px-4"
+                onClick={() => onMobileMenuOpenChange(false)}
+              >
+                Home
+              </ButtonLink>
               <div className="grid gap-2">
                 {authedMenuItems.map((item) => renderNavLink(item, "w-full"))}
               </div>
@@ -184,6 +193,14 @@ export function AppHeader({
           ) : (
             <>
               <p className="muted-text px-1 text-xs uppercase tracking-[0.18em]">Explore</p>
+              <ButtonLink
+                href="/"
+                variant={isHome ? "secondary" : "ghost"}
+                className="w-full justify-start px-4"
+                onClick={() => onMobileMenuOpenChange(false)}
+              >
+                Home
+              </ButtonLink>
               <ButtonLink
                 href="/events"
                 variant={isEvents ? "secondary" : "primary"}
@@ -219,10 +236,21 @@ export function AppHeader({
       <header className="sticky top-0 z-40 bg-[rgba(7,6,15,0.88)] pt-[env(safe-area-inset-top)] backdrop-blur-xl border-b border-[var(--border)]">
         <div className="pointer-events-none absolute inset-x-0 top-[env(safe-area-inset-top)] h-px bg-[linear-gradient(90deg,transparent,rgba(255,46,168,0.55),rgba(34,211,255,0.55),transparent)]" />
         <div className="page-shell flex h-14 items-center justify-between gap-2 sm:h-16">
-          <Link
-            href="/"
-            className="brand-heading group flex min-h-11 shrink-0 items-center gap-2 text-base font-semibold tracking-tight"
-          >
+          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+            {!isHome ? (
+              <Link
+                href="/"
+                className="inline-flex h-11 shrink-0 items-center gap-1 rounded-[var(--radius-md)] px-2 text-sm font-semibold text-[var(--silver)] transition active:scale-95 hover:text-white md:hidden"
+                aria-label="Back to homepage"
+              >
+                <span aria-hidden="true">←</span>
+                <span>Home</span>
+              </Link>
+            ) : null}
+            <Link
+              href="/"
+              className="brand-heading group flex min-h-11 shrink-0 items-center gap-2 text-base font-semibold tracking-tight"
+            >
             <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-md bg-[linear-gradient(135deg,var(--neon-pink),var(--neon-blue))] shadow-[0_0_14px_rgba(255,46,168,0.5)]">
               <span className="absolute inset-0.5 rounded-[5px] bg-[rgba(7,6,15,0.85)]" />
               <span className="relative text-[10px] font-bold tracking-[0.05em] text-white">MT</span>
@@ -234,6 +262,7 @@ export function AppHeader({
               <span className="brand-gradient-text">Tix</span>
             </span>
           </Link>
+          </div>
 
           <nav className="flex min-w-0 items-center gap-2">
             <ButtonLink
@@ -282,7 +311,13 @@ export function AppHeader({
                   </ButtonLink>
                 </div>
 
-                {!isAuthRoute ? (
+                {!isAuthRoute && isHome ? (
+                  <ButtonLink href="/auth/login" variant="ghost" className="px-4 sm:hidden">
+                    Log in
+                  </ButtonLink>
+                ) : null}
+
+                {!isAuthRoute && !isHome ? (
                   <button
                     type="button"
                     aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
