@@ -85,7 +85,13 @@ select {
 a,
 button {
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+}
+
+@media (max-width: 767px) {
+  a,
+  button {
+    touch-action: manipulation;
+  }
 }
 
 details > summary {
@@ -110,6 +116,16 @@ a {
   width: min(1180px, 94vw);
   margin: 0 auto;
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    padding-bottom: 0;
+  }
+
+  .section-shell {
+    padding-bottom: clamp(2rem, 4vw, 5rem);
+  }
 }
 
 .section-shell {

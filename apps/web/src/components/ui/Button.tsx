@@ -26,7 +26,7 @@ export function getButtonClassName({
   variant = "primary",
   className = ""
 }: ButtonClassOptions = {}): string {
-  return `inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] px-5 text-sm font-semibold transition-all duration-200 touch-manipulation active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${variantClasses[variant]} ${className}`;
+  return `inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] px-5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-60 max-md:min-h-11 max-md:touch-manipulation max-md:active:scale-[0.98] max-md:disabled:active:scale-100 ${variantClasses[variant]} ${className}`;
 }
 
 export function Button({

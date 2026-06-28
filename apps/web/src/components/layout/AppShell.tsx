@@ -11,7 +11,7 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="flex min-h-screen min-h-dvh flex-col">
       <AppHeader onAuthChange={setIsAuthenticated} />
-      <main className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-[env(safe-area-inset-bottom)]">
+      <main className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
       <MobileBottomNav isAuthenticated={isAuthenticated} onAuthChange={setIsAuthenticated} />
