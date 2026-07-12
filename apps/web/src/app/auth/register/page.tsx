@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
-  title: "Create Account | Miami Tix",
-  description: "Create your Miami Tix account for event ticket trading."
+  title: "Create Account | Tix",
+  description: "Create your Tix account for event ticket trading."
 };
 
 export default function RegisterPage() {

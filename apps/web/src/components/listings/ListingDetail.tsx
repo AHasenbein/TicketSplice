@@ -7,13 +7,13 @@ import type { FormEvent } from "react";
 import { getCurrentUser } from "@/lib/api/auth";
 import { ApiClientError } from "@/lib/api/client";
 import { getEvent, uploadEventImage } from "@/lib/api/events";
-import { EventImageError, prepareEventImageUpload } from "@/lib/images/prepare-event-image";
 import { deleteListing, getListing, purchaseListing, updateListing } from "@/lib/api/listings";
 import type { Listing } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
+import { EventImagePicker } from "../ui/EventImagePicker";
 import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -39,9 +39,9 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
   const [isDeletingListing, setIsDeletingListing] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [imageError, setImageError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -184,26 +184,16 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
     }
   }
 
-  async function handleEventImageUpload(file: File | null) {
-    if (!file) {
-      setEventImageDataToUpload("");
-      return;
-    }
+  function applyCroppedImage(dataUrl: string) {
+    setImageError("");
+    setEventImageUrl(dataUrl);
+    setEventImageDataToUpload(dataUrl);
+  }
 
-    setIsProcessingImage(true);
-    setErrorMessage("");
-    try {
-      const dataUrl = await prepareEventImageUpload(file);
-      setEventImageUrl(dataUrl);
-      setEventImageDataToUpload(dataUrl);
-    } catch (error) {
-      setEventImageDataToUpload("");
-      setErrorMessage(
-        error instanceof EventImageError ? error.message : "Could not process image."
-      );
-    } finally {
-      setIsProcessingImage(false);
-    }
+  function clearEventImage() {
+    setImageError("");
+    setEventImageUrl("");
+    setEventImageDataToUpload("");
   }
 
   async function handleDeleteListing() {
@@ -337,28 +327,15 @@ export function ListingDetail({ listingId }: ListingDetailProps) {
                 type="number"
                 value={editQuantity}
               />
-              <label className="grid gap-1.5 text-sm">
-                <span className="muted-text">Event image</span>
-                <input
-                  accept="image/*"
-                  className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
-                  disabled={isProcessingImage}
-                  onChange={(event) => void handleEventImageUpload(event.target.files?.[0] ?? null)}
-                  type="file"
-                />
-                {isProcessingImage ? (
-                  <span className="text-xs muted-text">Resizing image...</span>
-                ) : null}
-              </label>
-              {eventImageUrl ? (
-                <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
-                  <img
-                    alt={`${listing.eventTitle} event image preview`}
-                    className="h-44 w-full object-cover"
-                    src={eventImageUrl}
-                  />
-                </div>
-              ) : null}
+              <EventImagePicker
+                variant="field"
+                label="Event image"
+                helperText="Choose a photo, then crop what shows on cards"
+                valueUrl={eventImageUrl}
+                onChange={applyCroppedImage}
+                onClear={clearEventImage}
+                errorMessage={imageError || undefined}
+              />
               <Button disabled={isEditingListing} type="submit" variant="secondary">
                 {isEditingListing
                   ? isUploadingImage

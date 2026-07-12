@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
-  title: "Log In | Miami Tix",
+  title: "Log In | Tix",
   description: "Sign in to buy and sell event tickets."
 };
 

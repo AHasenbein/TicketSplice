@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MyListings } from "@/components/listings/MyListings";
 
 export const metadata: Metadata = {
-  title: "My Listings | Miami Tix",
+  title: "My Listings | Tix",
   description: "Manage active and sold ticket listings."
 };
 

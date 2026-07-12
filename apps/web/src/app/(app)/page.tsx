@@ -122,7 +122,7 @@ export default function Home() {
               <span className="silver-text">without the friction.</span>
             </h1>
             <p className="fade-in-up delay-3 silver-text max-w-2xl text-sm leading-relaxed sm:text-lg">
-              Miami Tix is a zero fees music ticket marketplace for fans. Discover events, join our
+              Tix is a zero fees music ticket marketplace for fans. Discover events, join our
               community, and get tickets in minutes — backed by trusted sellers, verified accounts,
               and made by people who actually go to events.
             </p>
@@ -218,7 +218,7 @@ export default function Home() {
             Built for trust
           </span>
           <h2 className="brand-heading mt-3 text-2xl font-semibold sm:text-4xl">
-            Why Miami Tix feels alive
+            Why Tix feels alive
           </h2>
         </header>
         <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
@@ -266,7 +266,7 @@ export default function Home() {
               Plug in. Tune in. <span className="brand-gradient-text">Vibe out.</span>
             </h2>
             <p className="silver-text mt-2 max-w-xl text-sm sm:text-base">
-              Whether you're chasing a sold-out show or moving a spare ticket fast, Miami Tix keeps
+              Whether you're chasing a sold-out show or moving a spare ticket fast, Tix keeps
               it sleek, secure, and electric.
             </p>
           </div>

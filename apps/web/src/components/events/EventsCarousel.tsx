@@ -16,7 +16,7 @@ export function EventsCarousel({
   title = "Discover events",
   subtitle = "Hand-picked nights, just-dropped lineups, and trending listings.",
   limit = 10,
-  autoAdvanceMs = 6000
+  autoAdvanceMs = 9000
 }: EventsCarouselProps) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [events, setEvents] = useState<Event[]>([]);

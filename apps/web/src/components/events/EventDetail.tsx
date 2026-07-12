@@ -7,7 +7,6 @@ import type { Event } from "@/lib/api/events";
 import { addEventToWishlist, getCurrentUser } from "@/lib/api/auth";
 import type { Listing } from "@/lib/api/listings";
 import { getEvent, updateEvent, uploadEventImage } from "@/lib/api/events";
-import { EventImageError, prepareEventImageUpload } from "@/lib/images/prepare-event-image";
 import { ApiClientError } from "@/lib/api/client";
 import { listListings } from "@/lib/api/listings";
 import { readAuthToken } from "@/lib/auth/token-storage";
@@ -15,6 +14,7 @@ import { ListingCard } from "../listings/ListingCard";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { ButtonLink } from "../ui/ButtonLink";
+import { EventImagePicker } from "../ui/EventImagePicker";
 import { Input } from "../ui/Input";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -37,10 +37,10 @@ export function EventDetail({ eventId }: EventDetailProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingEvent, setIsSavingEvent] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [listingsErrorMessage, setListingsErrorMessage] = useState("");
   const [wishlistMessage, setWishlistMessage] = useState("");
+  const [imageError, setImageError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -179,26 +179,16 @@ export function EventDetail({ eventId }: EventDetailProps) {
     }
   }
 
-  async function handleEditImageUpload(file: File | null) {
-    if (!file) {
-      setEditImageDataToUpload("");
-      return;
-    }
+  function applyCroppedImage(dataUrl: string) {
+    setImageError("");
+    setEditImageUrl(dataUrl);
+    setEditImageDataToUpload(dataUrl);
+  }
 
-    setIsProcessingImage(true);
-    setErrorMessage("");
-    try {
-      const dataUrl = await prepareEventImageUpload(file);
-      setEditImageUrl(dataUrl);
-      setEditImageDataToUpload(dataUrl);
-    } catch (error) {
-      setEditImageDataToUpload("");
-      setErrorMessage(
-        error instanceof EventImageError ? error.message : "Could not process image."
-      );
-    } finally {
-      setIsProcessingImage(false);
-    }
+  function clearEditImage() {
+    setImageError("");
+    setEditImageUrl("");
+    setEditImageDataToUpload("");
   }
 
   const shouldShowVenue = Boolean(event.venue?.trim()) && event.venue.trim() !== "TBD";
@@ -313,30 +303,15 @@ export function EventDetail({ eventId }: EventDetailProps) {
                   type="datetime-local"
                   value={editStartAt}
                 />
-                <label className="grid gap-1.5 text-sm">
-                  <span className="muted-text">Event image</span>
-                  <input
-                    accept="image/*"
-                    className="h-11 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)] outline-none transition file:mr-3 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--foreground)] hover:file:bg-white/20 focus:border-[rgba(62,164,255,0.6)] focus:ring-2 focus:ring-[var(--ring)]"
-                    disabled={isProcessingImage}
-                    onChange={(inputEvent) =>
-                      void handleEditImageUpload(inputEvent.target.files?.[0] ?? null)
-                    }
-                    type="file"
-                  />
-                  {isProcessingImage ? (
-                    <span className="text-xs muted-text">Resizing image...</span>
-                  ) : null}
-                </label>
-                {editImageUrl ? (
-                  <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
-                    <img
-                      alt={`${event.title} event image preview`}
-                      className="h-44 w-full object-cover"
-                      src={editImageUrl}
-                    />
-                  </div>
-                ) : null}
+                <EventImagePicker
+                  variant="field"
+                  label="Event image"
+                  helperText="Choose a photo, then crop what shows on cards"
+                  valueUrl={editImageUrl}
+                  onChange={applyCroppedImage}
+                  onClear={clearEditImage}
+                  errorMessage={imageError || undefined}
+                />
                 <Button variant="secondary" disabled={isSavingEvent} type="submit">
                   {isSavingEvent
                     ? isUploadingImage

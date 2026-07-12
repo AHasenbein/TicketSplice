@@ -13,7 +13,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Miami Tix",
+  title: "Tix",
   description: "Miami's neon-charged marketplace for event tickets and house music nights.",
 };
 
